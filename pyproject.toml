@@ -1,0 +1,13 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "ray-cli"
+version = "0.1.0"
+description = "Command line utility for generating and broadcast DMX over sACN"
+authors = ["Norbert Batiuk <norbert@batiuk.se>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
