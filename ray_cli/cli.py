@@ -128,6 +128,12 @@ def parse_args():
 
     display_group = argparser.add_argument_group("display options")
     display_group.add_argument(
+        "-v",
+        "--verbose",
+        action="store_true",
+        help="run in verbose mode",
+    )
+    display_group.add_argument(
         "-q",
         "--quiet",
         action="store_true",
@@ -158,6 +164,8 @@ def main():
 
         if args.quiet:
             feedback = Feedback.NONE
+        elif args.verbose:
+            feedback = Feedback.TABULAR
         else:
             feedback = Feedback.PROGRESS_BAR
 

@@ -8,7 +8,7 @@ from ray_cli.modes import (
     StaticModeOutputGenerator,
 )
 from ray_cli.sacn.dispatcher import SACNDispatcher
-from ray_cli.utils import Feedback, ProgressBar
+from ray_cli.utils import Feedback, ProgressBar, TableLogger
 
 
 class App:
@@ -30,6 +30,7 @@ class App:
         self.fps = fps
         self.duration = duration
 
+        self.table_logger = TableLogger(channels)
         self.progress_bar = ProgressBar(round(fps * duration) if duration else None)
 
     def run(
@@ -52,11 +53,15 @@ class App:
             payload = next(self.generator)
             self.dispatcher.send(payload)
 
-            if feedback == Feedback.PROGRESS_BAR:
+            if feedback == Feedback.TABULAR:
+                self.table_logger.report(i + 1, payload)
+
+            elif feedback == Feedback.PROGRESS_BAR:
                 self.progress_bar.report(
                     i + 1,
                     time.time() - t_start,
                 )
+
             elapsed_time = time.perf_counter() - t_0
             t_sleep = max(0, 1 / self.fps - elapsed_time)
             time.sleep(t_sleep)
