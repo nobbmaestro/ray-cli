@@ -9,7 +9,7 @@ from ray_cli.modes import (
     StaticModeOutputGenerator,
 )
 from ray_cli.sacn import SACNDispatcher
-from ray_cli.utils import generate_settings_report
+from ray_cli.utils import Feedback, generate_settings_report
 
 from .__version__ import __version__
 from .app import App
@@ -156,6 +156,11 @@ def main():
     try:
         args = parse_args()
 
+        if args.quiet:
+            feedback = Feedback.NONE
+        else:
+            feedback = Feedback.PROGRESS_BAR
+
         mode_to_generator = {
             Mode.STATIC: StaticModeOutputGenerator,
             Mode.RAMP: RampModeOutputGenerator,
@@ -192,7 +197,7 @@ def main():
             duration=args.duration,
         )
 
-        app.run()
+        app.run(feedback)
 
         if not args.quiet:
             print("\nDone!")
