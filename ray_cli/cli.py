@@ -2,7 +2,12 @@ import argparse
 import ipaddress
 import sys
 
-from ray_cli.modes import Mode, RampModeOutputGenerator, StaticModeOutputGenerator
+from ray_cli.modes import (
+    ChaseModeOutputGenerator,
+    Mode,
+    RampModeOutputGenerator,
+    StaticModeOutputGenerator,
+)
 from ray_cli.sacn import SACNDispatcher
 
 from .__version__ import __version__
@@ -117,6 +122,7 @@ def main():
         mode_to_generator = {
             Mode.STATIC: StaticModeOutputGenerator,
             Mode.RAMP: RampModeOutputGenerator,
+            Mode.CHASE: ChaseModeOutputGenerator,
         }
 
         generator_class = mode_to_generator.get(args.mode)

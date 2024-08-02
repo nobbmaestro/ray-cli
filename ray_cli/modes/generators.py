@@ -81,3 +81,21 @@ class RampModeOutputGenerator(BaseGenerator):
                 numpy.linspace(1, 0, size),
             ),
         )
+
+
+class ChaseModeOutputGenerator(BaseGenerator):
+
+    def next(self) -> List[int]:
+        channel = round(next(self.generator))
+        return [self.intensity if channel == i else 0 for i in range(self.channels)]
+
+    @classmethod
+    def create(
+        cls,
+        channels: int,
+        fps: int,
+        frequency: float,
+        intensity: int,
+    ) -> Iterator:
+        size = math.ceil(fps / frequency)
+        return itertools.cycle(numpy.linspace(0, channels - 1, size))
