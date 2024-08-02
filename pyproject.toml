@@ -8,6 +8,15 @@ version = "0.1.1"
 description = "Command line utility for generating and broadcast DMX over sACN"
 authors = ["Norbert Batiuk <norbert@batiuk.se>"]
 readme = "README.md"
+license = "MIT"
+repository = "https://github.com/nobbmaestro/ray-cli"
+keywords = ["dmx", "sacn", "cli", "utility", "python"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 
 [tool.poetry.scripts]
 ray-cli = "ray_cli.cli:main"
