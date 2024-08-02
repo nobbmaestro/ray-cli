@@ -2,7 +2,7 @@ import argparse
 import ipaddress
 import sys
 
-from ray_cli.modes import Mode, StaticModeOutputGenerator
+from ray_cli.modes import Mode, RampModeOutputGenerator, StaticModeOutputGenerator
 from ray_cli.sacn import SACNDispatcher
 
 from .__version__ import __version__
@@ -47,7 +47,7 @@ def parse_args():
         "-m",
         "--mode",
         type=Mode,
-        default="static",
+        default="ramp",
         choices=[mode.value for mode in Mode],  # type: ignore
         help="broadcast mode, defaults to ramp",
     )
@@ -114,7 +114,16 @@ def main():
     try:
         args = parse_args()
 
-        generator = StaticModeOutputGenerator(
+        mode_to_generator = {
+            Mode.STATIC: StaticModeOutputGenerator,
+            Mode.RAMP: RampModeOutputGenerator,
+        }
+
+        generator_class = mode_to_generator.get(args.mode)
+        if generator_class is None:
+            raise NotImplementedError(f"Generator '{args.mode}' does not exist.")
+
+        generator = generator_class(
             channels=args.channels,
             fps=args.fps,
             frequency=args.frequency,
