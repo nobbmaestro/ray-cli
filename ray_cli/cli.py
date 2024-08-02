@@ -126,6 +126,14 @@ def parse_args():
         help="IP address of the dmx destination, defaults to MULTICAST",
     )
 
+    display_group = argparser.add_argument_group("display options")
+    display_group.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="run in quiet mode",
+    )
+
     query_group = argparser.add_argument_group("query options")
     query_group.add_argument(
         "-h",
@@ -173,7 +181,8 @@ def main():
             dst_ip_address=args.dst,
         )
 
-        print_greetings(args)
+        if not args.quiet:
+            print_greetings(args)
 
         app = App(
             generator=generator,
@@ -185,7 +194,8 @@ def main():
 
         app.run()
 
-        print("\nDone!")
+        if not args.quiet:
+            print("\nDone!")
 
     except KeyboardInterrupt:
         print("\nCancelling...")
