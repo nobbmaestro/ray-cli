@@ -9,6 +9,7 @@ from ray_cli.modes import (
     StaticModeOutputGenerator,
 )
 from ray_cli.sacn import SACNDispatcher
+from ray_cli.utils import generate_settings_report
 
 from .__version__ import __version__
 from .app import App
@@ -17,6 +18,19 @@ APP_NAME = "ray-cli"
 DESCRIPTION = "Command line utility for generating and broadcast DMX over sACN."
 MAX_CHANNELS = 512
 MAX_INTENSITY = 255
+
+
+def print_greetings(args):
+    title = "Ray CLI"
+    body = generate_settings_report(
+        args=args,
+        max_channels=MAX_CHANNELS,
+        max_intensity=MAX_INTENSITY,
+    )
+
+    greetings = f"\n{title}\n\n{body}\n"
+
+    print(greetings)
 
 
 def range_limited_int_type(
@@ -159,6 +173,8 @@ def main():
             dst_ip_address=args.dst,
         )
 
+        print_greetings(args)
+
         app = App(
             generator=generator,
             dispatcher=dispatcher,
@@ -168,6 +184,8 @@ def main():
         )
 
         app.run()
+
+        print("\nDone!")
 
     except KeyboardInterrupt:
         print("\nCancelling...")
