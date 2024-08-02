@@ -2,13 +2,13 @@ import argparse
 import ipaddress
 import sys
 
+from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
     ChaseModeOutputGenerator,
     Mode,
     RampModeOutputGenerator,
     StaticModeOutputGenerator,
 )
-from ray_cli.sacn import SACNDispatcher
 from ray_cli.utils import Feedback, generate_settings_report
 
 from .__version__ import __version__

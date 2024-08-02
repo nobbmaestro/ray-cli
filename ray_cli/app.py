@@ -2,12 +2,12 @@ import itertools
 import time
 from typing import Optional, Union
 
+from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
     ChaseModeOutputGenerator,
     RampModeOutputGenerator,
     StaticModeOutputGenerator,
 )
-from ray_cli.sacn.dispatcher import SACNDispatcher
 from ray_cli.utils import Feedback, ProgressBar, TableLogger
 
 
