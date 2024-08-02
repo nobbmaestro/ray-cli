@@ -11,6 +11,7 @@ from ray_cli.modes import (
 from ray_cli.sacn import SACNDispatcher
 
 from .__version__ import __version__
+from .app import App
 
 APP_NAME = "ray-cli"
 DESCRIPTION = "Command line utility for generating and broadcast DMX over sACN."
@@ -151,14 +152,22 @@ def main():
         )
 
         dispatcher = SACNDispatcher(
-            generator=generator,
             channels=args.channels,
             fps=args.fps,
             universes=args.universes,
             src_ip_address=args.IP_ADDRESS,
             dst_ip_address=args.dst,
         )
-        dispatcher.run(args.duration)
+
+        app = App(
+            generator=generator,
+            dispatcher=dispatcher,
+            channels=args.channels,
+            fps=args.fps,
+            duration=args.duration,
+        )
+
+        app.run()
 
     except KeyboardInterrupt:
         print("\nCancelling...")
