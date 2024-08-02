@@ -14,6 +14,8 @@ ray-cli = "ray_cli.cli:main"
 
 [tool.poetry.dependencies]
 python = "^3.8"
+sacn = "^1.10.0"
+numpy = "==1.24.4"
 
 [tool.poetry.group.dev.dependencies]
 black = "==24.2.0"
