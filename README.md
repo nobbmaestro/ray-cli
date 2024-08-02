@@ -1,10 +1,10 @@
 # Ray CLI
 
-Command line utility for generating and broadting DMX over sACN.
+Command line utility for generating and broadcast DMX over sACN.
 
 [![GitHub Release](https://img.shields.io/github/v/release/nobbmaestro/ray-cli)](github-release)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/ray-cli/development)](github-last-commit)
-[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.6.0/development)](githut-commits-since)
+[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.1.0/development)](githut-commits-since)
 
 ## Installation
 
