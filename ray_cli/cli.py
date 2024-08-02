@@ -57,6 +57,13 @@ def parse_args():
         help="broadcast mode, defaults to ramp",
     )
     argparser.add_argument(
+        "-d",
+        "--duration",
+        default=None,
+        type=float,
+        help="broadcast duration in seconds, defaults to INDEFINITE",
+    )
+    argparser.add_argument(
         "-u",
         "--universes",
         default=(1,),
@@ -143,7 +150,7 @@ def main():
             universes=args.universes,
             src_ip_address=args.IP_ADDRESS,
         )
-        dispatcher.run()
+        dispatcher.run(args.duration)
 
     except KeyboardInterrupt:
         print("\nCancelling...")

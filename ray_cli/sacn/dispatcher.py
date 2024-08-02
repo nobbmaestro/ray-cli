@@ -1,6 +1,7 @@
 import ipaddress
+import itertools
 import time
-from typing import Iterator, Sequence
+from typing import Iterator, Optional, Sequence
 
 import sacn
 
@@ -40,9 +41,15 @@ class SACNDispatcher:
 
     def run(
         self,
+        duration: Optional[int] = None,
     ):
         self.start()
-        while True:
+
+        num_frames = (
+            range(round(self.fps * duration)) if duration else itertools.count(0, 1)
+        )
+
+        for _ in num_frames:
             t_0 = time.perf_counter()
 
             payload = next(self.generator)
@@ -52,3 +59,5 @@ class SACNDispatcher:
             elapsed_time = time.perf_counter() - t_0
             t_sleep = max(0, self.period - elapsed_time)
             time.sleep(t_sleep)
+
+        self.stop()
