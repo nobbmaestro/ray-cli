@@ -104,6 +104,13 @@ def parse_args():
         type=int,
         help="frames per second per universe",
     )
+    argparser.add_argument(
+        "--dst",
+        type=ipaddress.IPv4Address,
+        default=None,
+        help="IP address of the dmx destination, defaults to MULTICAST",
+    )
+
     query_group = argparser.add_argument_group("query options")
     query_group.add_argument(
         "-h",
@@ -149,6 +156,7 @@ def main():
             fps=args.fps,
             universes=args.universes,
             src_ip_address=args.IP_ADDRESS,
+            dst_ip_address=args.dst,
         )
         dispatcher.run(args.duration)
 

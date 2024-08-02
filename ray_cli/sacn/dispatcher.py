@@ -14,12 +14,14 @@ class SACNDispatcher:
         fps: int,
         universes: Sequence[int],
         src_ip_address: ipaddress.IPv4Address,
+        dst_ip_address: Optional[ipaddress.IPv4Address] = None,
     ):
         self.fps = fps
         self.channels = channels
         self.universes = universes
         self.generator = generator
         self.src_ip_address = src_ip_address
+        self.dst_ip_address = dst_ip_address
         self.sender = sacn.sACNsender(
             bind_address=str(self.src_ip_address),
             fps=self.fps,
@@ -33,7 +35,10 @@ class SACNDispatcher:
         self.sender.start()
         for universe in self.universes:
             self.sender.activate_output(universe)
-            self.sender[universe].multicast = True
+            if self.dst_ip_address:
+                self.sender[universe].destination = str(self.dst_ip_address)
+            else:
+                self.sender[universe].multicast = True
         self.sender.manual_flush = True
 
     def stop(self):
