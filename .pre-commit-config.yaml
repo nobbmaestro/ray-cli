@@ -37,3 +37,10 @@ repos:
         language: system
         types: [python]
         require_serial: true
+  - repo: local
+    hooks:
+      - id: test_versions_are_in_sync
+        name: test_versions_are_in_sync
+        entry: python -m tests.scripts.test_versions_are_in_sync
+        language: system
+        types: [python]
