@@ -6,6 +6,7 @@ from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
     ChaseModeOutputGenerator,
     Mode,
+    RampDownModeOutputGenerator,
     RampModeOutputGenerator,
     RampUpModeOutputGenerator,
     StaticModeOutputGenerator,
@@ -172,7 +173,9 @@ def main():
 
         mode_to_generator = {
             Mode.CHASE: ChaseModeOutputGenerator,
+            Mode.CHASE: ChaseModeOutputGenerator,
             Mode.RAMP: RampModeOutputGenerator,
+            Mode.RAMP_DOWN: RampDownModeOutputGenerator,
             Mode.RAMP_UP: RampUpModeOutputGenerator,
             Mode.STATIC: StaticModeOutputGenerator,
         }
