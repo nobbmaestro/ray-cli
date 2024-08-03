@@ -5,6 +5,7 @@ Command line utility for generating and broadcast DMX over sACN.
 [![GitHub Release](https://img.shields.io/github/v/release/nobbmaestro/ray-cli)](github-release)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/ray-cli/development)](github-last-commit)
 [![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.1.1/development)](githut-commits-since)
+![Tests](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
 
 ## Installation
 
