@@ -7,6 +7,7 @@ from ray_cli.modes import (
     ChaseModeOutputGenerator,
     Mode,
     RampModeOutputGenerator,
+    RampUpModeOutputGenerator,
     StaticModeOutputGenerator,
 )
 from ray_cli.utils import Feedback, generate_settings_report
@@ -170,9 +171,10 @@ def main():
             feedback = Feedback.PROGRESS_BAR
 
         mode_to_generator = {
-            Mode.STATIC: StaticModeOutputGenerator,
-            Mode.RAMP: RampModeOutputGenerator,
             Mode.CHASE: ChaseModeOutputGenerator,
+            Mode.RAMP: RampModeOutputGenerator,
+            Mode.RAMP_UP: RampUpModeOutputGenerator,
+            Mode.STATIC: StaticModeOutputGenerator,
         }
 
         generator_class = mode_to_generator.get(args.mode)

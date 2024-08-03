@@ -83,6 +83,28 @@ class RampModeOutputGenerator(BaseGenerator):
         )
 
 
+class RampUpModeOutputGenerator(BaseGenerator):
+
+    def next(self) -> List[int]:
+        output_coeff = next(self.generator)
+        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+
+    @classmethod
+    def create(
+        cls,
+        channels: int,
+        fps: int,
+        frequency: float,
+        intensity: int,
+    ) -> Iterator:
+        size = math.ceil(fps / frequency)
+        return itertools.cycle(
+            itertools.chain(
+                numpy.linspace(0, 1, size),
+            ),
+        )
+
+
 class ChaseModeOutputGenerator(BaseGenerator):
 
     def next(self) -> List[int]:
