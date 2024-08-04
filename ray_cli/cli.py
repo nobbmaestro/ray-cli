@@ -9,6 +9,7 @@ from ray_cli.modes import (
     RampDownModeOutputGenerator,
     RampModeOutputGenerator,
     RampUpModeOutputGenerator,
+    SquareModeOutputGenerator,
     StaticModeOutputGenerator,
 )
 from ray_cli.utils import Feedback, generate_settings_report
@@ -45,9 +46,7 @@ def range_limited_int_type(
         except ValueError as exc:
             raise argparse.ArgumentTypeError(f"Invalid integer value: '{arg}'") from exc
         if value < lower or value > upper:
-            raise argparse.ArgumentTypeError(
-                f"Value mest be between {lower} and {upper}"
-            )
+            raise argparse.ArgumentTypeError(f"Value mest be between {lower} and {upper}")
         return value
 
     return validate
@@ -173,10 +172,10 @@ def main():
 
         mode_to_generator = {
             Mode.CHASE: ChaseModeOutputGenerator,
-            Mode.CHASE: ChaseModeOutputGenerator,
             Mode.RAMP: RampModeOutputGenerator,
             Mode.RAMP_DOWN: RampDownModeOutputGenerator,
             Mode.RAMP_UP: RampUpModeOutputGenerator,
+            Mode.SQUARE: SquareModeOutputGenerator,
             Mode.STATIC: StaticModeOutputGenerator,
         }
 

@@ -6,4 +6,5 @@ class Mode(str, enum.Enum):
     RAMP = "ramp"
     RAMP_DOWN = "ramp-down"
     RAMP_UP = "ramp-up"
+    SQUARE = "square"
     STATIC = "static"
