@@ -83,6 +83,50 @@ class RampModeOutputGenerator(BaseGenerator):
         )
 
 
+class RampUpModeOutputGenerator(BaseGenerator):
+
+    def next(self) -> List[int]:
+        output_coeff = next(self.generator)
+        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+
+    @classmethod
+    def create(
+        cls,
+        channels: int,
+        fps: int,
+        frequency: float,
+        intensity: int,
+    ) -> Iterator:
+        size = math.ceil(fps / frequency)
+        return itertools.cycle(
+            itertools.chain(
+                numpy.linspace(0, 1, size),
+            ),
+        )
+
+
+class RampDownModeOutputGenerator(BaseGenerator):
+
+    def next(self) -> List[int]:
+        output_coeff = next(self.generator)
+        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+
+    @classmethod
+    def create(
+        cls,
+        channels: int,
+        fps: int,
+        frequency: float,
+        intensity: int,
+    ) -> Iterator:
+        size = math.ceil(fps / frequency)
+        return itertools.cycle(
+            itertools.chain(
+                numpy.linspace(1, 0, size),
+            ),
+        )
+
+
 class ChaseModeOutputGenerator(BaseGenerator):
 
     def next(self) -> List[int]:
@@ -99,3 +143,49 @@ class ChaseModeOutputGenerator(BaseGenerator):
     ) -> Iterator:
         size = math.ceil(fps / frequency)
         return itertools.cycle(numpy.linspace(0, channels - 1, size))
+
+
+class SquareModeOutputGenerator(BaseGenerator):
+
+    def next(self) -> List[int]:
+        output_coeff = next(self.generator)
+        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+
+    @classmethod
+    def create(
+        cls,
+        channels: int,
+        fps: int,
+        frequency: float,
+        intensity: int,
+    ) -> Iterator:
+        size = math.ceil((fps / frequency) / 2)
+        return itertools.cycle(
+            itertools.chain(
+                numpy.linspace(0, 0, size),
+                numpy.linspace(1, 1, size),
+            ),
+        )
+
+
+class SineModeOutputGenerator(BaseGenerator):
+
+    def next(self) -> List[int]:
+        output_coeff = next(self.generator)
+        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+
+    @classmethod
+    def create(
+        cls,
+        channels: int,
+        fps: int,
+        frequency: float,
+        intensity: int,
+    ) -> Iterator:
+        size = math.ceil(fps / frequency)
+
+        if size <= 2:
+            return itertools.cycle([0, 1])
+
+        x_values = numpy.linspace(0, numpy.pi, size)
+        return itertools.cycle(itertools.chain(numpy.sin(x_values)))

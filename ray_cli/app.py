@@ -2,12 +2,12 @@ import itertools
 import time
 from typing import Optional, Union
 
+from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
     ChaseModeOutputGenerator,
     RampModeOutputGenerator,
     StaticModeOutputGenerator,
 )
-from ray_cli.sacn.dispatcher import SACNDispatcher
 from ray_cli.utils import Feedback, ProgressBar, TableLogger
 
 
@@ -36,6 +36,7 @@ class App:
     def run(
         self,
         feedback: Optional[Feedback] = None,
+        dry=False,
     ):
         self.dispatcher.start()
 
@@ -51,7 +52,8 @@ class App:
             t_0 = time.perf_counter()
 
             payload = next(self.generator)
-            self.dispatcher.send(payload)
+            if not dry:
+                self.dispatcher.send(payload)
 
             if feedback == Feedback.TABULAR:
                 self.table_logger.report(i + 1, payload)

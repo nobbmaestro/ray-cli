@@ -4,10 +4,19 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "ray-cli"
-version = "0.1.1"
+version = "0.2.0"
 description = "Command line utility for generating and broadcast DMX over sACN"
 authors = ["Norbert Batiuk <norbert@batiuk.se>"]
 readme = "README.md"
+license = "MIT"
+repository = "https://github.com/nobbmaestro/ray-cli"
+keywords = ["dmx", "sacn", "cli", "utility", "python"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 
 [tool.poetry.scripts]
 ray-cli = "ray_cli.cli:main"
@@ -25,6 +34,8 @@ isort = "==5.13.2"
 pre-commit = "==3.5.0"
 pylint = "==3.1.0"
 pytype = "==2024.2.27"
+pytest = "^8.3.2"
+tox = "^4.16.0"
 
 [tool.black]
 line-length = 88

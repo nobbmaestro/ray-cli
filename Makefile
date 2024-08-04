@@ -12,6 +12,7 @@ install: build
 
 publish: build
 	@echo "Publishing..."
+	poetry publish
 
 clean:
 	@echo "Cleaning up..."

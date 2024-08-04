@@ -2,13 +2,17 @@ import argparse
 import ipaddress
 import sys
 
+from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
     ChaseModeOutputGenerator,
     Mode,
+    RampDownModeOutputGenerator,
     RampModeOutputGenerator,
+    RampUpModeOutputGenerator,
+    SineModeOutputGenerator,
+    SquareModeOutputGenerator,
     StaticModeOutputGenerator,
 )
-from ray_cli.sacn import SACNDispatcher
 from ray_cli.utils import Feedback, generate_settings_report
 
 from .__version__ import __version__
@@ -17,10 +21,12 @@ from .app import App
 APP_NAME = "ray-cli"
 DESCRIPTION = "Command line utility for generating and broadcast DMX over sACN."
 MAX_CHANNELS = 512
+MAX_FPS = 10**4
 MAX_INTENSITY = 255
+MAX_UNIVERSE = 8
 
 
-def print_greetings(args):
+def print_report(args):
     title = "Ray CLI"
     body = generate_settings_report(
         args=args,
@@ -35,7 +41,7 @@ def print_greetings(args):
 
 def range_limited_int_type(
     upper: int,
-    lower: int = 0,
+    lower: int = 1,
 ):
     def validate(arg: int) -> int:
         try:
@@ -51,7 +57,20 @@ def range_limited_int_type(
     return validate
 
 
-def parse_args():
+def non_zero_float_type():
+    def validate(arg: float) -> float:
+        try:
+            value = float(arg)
+        except ValueError as exc:
+            raise argparse.ArgumentTypeError(f"Invalid float value: '{arg}'") from exc
+        if value <= 0.0:
+            raise argparse.ArgumentTypeError("Value must be non-zero")
+        return value
+
+    return validate
+
+
+def parse_args(args=None):
     argparser = argparse.ArgumentParser(
         prog=APP_NAME,
         description=DESCRIPTION,
@@ -75,7 +94,7 @@ def parse_args():
         "-d",
         "--duration",
         default=None,
-        type=float,
+        type=non_zero_float_type(),  # type: ignore
         help="broadcast duration in seconds, defaults to INDEFINITE",
     )
     argparser.add_argument(
@@ -83,40 +102,34 @@ def parse_args():
         "--universes",
         default=(1,),
         nargs="+",
-        type=int,
+        type=range_limited_int_type(upper=MAX_UNIVERSE),  # type: ignore
         help="sACN universe(s) to send to",
     )
     argparser.add_argument(
         "-c",
         "--channels",
         default=24,
-        type=range_limited_int_type(
-            lower=0,
-            upper=MAX_CHANNELS,
-        ),  # type: ignore
-        help=f"DMX channels at universe to send to, (0, ...{MAX_CHANNELS})",
+        type=range_limited_int_type(upper=MAX_CHANNELS),  # type: ignore
+        help=f"DMX channels at universe to send to, (1, ...{MAX_CHANNELS})",
     )
     argparser.add_argument(
         "-i",
         "--intensity",
         default=10,
-        type=range_limited_int_type(
-            lower=0,
-            upper=MAX_INTENSITY,
-        ),  # type: ignore
-        help=f"DMX channels output intensity, (0, ...{MAX_INTENSITY})",
+        type=range_limited_int_type(upper=MAX_INTENSITY),  # type: ignore
+        help=f"DMX channels output intensity, (1, ...{MAX_INTENSITY})",
     )
     argparser.add_argument(
         "-f",
         "--frequency",
         default=1.0,
-        type=float,
+        type=non_zero_float_type(),  # type: ignore
         help="signal frequency",
     )
     argparser.add_argument(
         "--fps",
         default=10,
-        type=int,
+        type=range_limited_int_type(upper=MAX_FPS),  # type: ignore
         help="frames per second per universe",
     )
     argparser.add_argument(
@@ -140,6 +153,13 @@ def parse_args():
         help="run in quiet mode",
     )
 
+    operational_group = argparser.add_argument_group("operational options")
+    operational_group.add_argument(
+        "--dry",
+        action="store_true",
+        help="simulate outputs without broadcasting (dry run mode), assumes verbose mode",  # noqa: E501 # pylint: disable=line-too-long
+    )
+
     query_group = argparser.add_argument_group("query options")
     query_group.add_argument(
         "-h",
@@ -153,26 +173,28 @@ def parse_args():
         version=f"{APP_NAME} {__version__}",
     )
 
-    args = argparser.parse_args()
-
-    return args
+    return argparser.parse_args(args)
 
 
-def main():
+def main(args=None):
     try:
-        args = parse_args()
+        args = parse_args(args)
 
         if args.quiet:
             feedback = Feedback.NONE
-        elif args.verbose:
+        elif args.verbose or args.dry:
             feedback = Feedback.TABULAR
         else:
             feedback = Feedback.PROGRESS_BAR
 
         mode_to_generator = {
-            Mode.STATIC: StaticModeOutputGenerator,
-            Mode.RAMP: RampModeOutputGenerator,
             Mode.CHASE: ChaseModeOutputGenerator,
+            Mode.RAMP: RampModeOutputGenerator,
+            Mode.RAMP_DOWN: RampDownModeOutputGenerator,
+            Mode.RAMP_UP: RampUpModeOutputGenerator,
+            Mode.SINE: SineModeOutputGenerator,
+            Mode.SQUARE: SquareModeOutputGenerator,
+            Mode.STATIC: StaticModeOutputGenerator,
         }
 
         generator_class = mode_to_generator.get(args.mode)
@@ -195,7 +217,7 @@ def main():
         )
 
         if not args.quiet:
-            print_greetings(args)
+            print_report(args)
 
         app = App(
             generator=generator,
@@ -205,7 +227,7 @@ def main():
             duration=args.duration,
         )
 
-        app.run(feedback)
+        app.run(feedback, args.dry)
 
         if not args.quiet:
             print("\nDone!")
