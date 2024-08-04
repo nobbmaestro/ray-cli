@@ -142,6 +142,13 @@ def parse_args():
         help="run in quiet mode",
     )
 
+    operational_group = argparser.add_argument_group("operational options")
+    operational_group.add_argument(
+        "--dry",
+        action="store_true",
+        help="simulate outputs without broadcasting (dry run mode), assumes verbose mode",  # noqa: E501 # pylint: disable=line-too-long
+    )
+
     query_group = argparser.add_argument_group("query options")
     query_group.add_argument(
         "-h",
@@ -166,7 +173,7 @@ def main():
 
         if args.quiet:
             feedback = Feedback.NONE
-        elif args.verbose:
+        elif args.verbose or args.dry:
             feedback = Feedback.TABULAR
         else:
             feedback = Feedback.PROGRESS_BAR
@@ -211,7 +218,7 @@ def main():
             duration=args.duration,
         )
 
-        app.run(feedback)
+        app.run(feedback, args.dry)
 
         if not args.quiet:
             print("\nDone!")
