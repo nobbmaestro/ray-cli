@@ -30,12 +30,12 @@ $ ray-cli --help
 usage: ray-cli [-m {chase,ramp,ramp-down,ramp-up,sine,square,static}] [-d DURATION]
                [-u UNIVERSES [UNIVERSES ...]] [-c CHANNELS] [-i INTENSITY]
                [-f FREQUENCY] [--fps FPS] [--dst DST] [-v] [-q] [--dry] [-h]
-                [--version] IP_ADDRESS
+               [--version] IP_ADDRESS
 
 Command line utility for generating and broadcast DMX over sACN.
 
 positional arguments:
-  IP_ADDRESS            IP address of the dmx source
+  IP_ADDRESS            ip address of the dmx source
 
 optional arguments:
   -m {chase,ramp,ramp-down,ramp-up,sine,square,static},
@@ -52,7 +52,7 @@ optional arguments:
   -f FREQUENCY, --frequency FREQUENCY
                         signal frequency
   --fps FPS             frames per second per universe
-  --dst DST             IP address of the dmx destination, defaults to MULTICAST
+  --dst DST             ip address of the dmx destination, defaults to MULTICAST
 
 display options:
   -v, --verbose         run in verbose mode
