@@ -3,6 +3,7 @@ from .generators import (
     RampDownModeOutputGenerator,
     RampModeOutputGenerator,
     RampUpModeOutputGenerator,
+    SineModeOutputGenerator,
     SquareModeOutputGenerator,
     StaticModeOutputGenerator,
 )
@@ -14,6 +15,7 @@ __all__ = (
     "RampDownModeOutputGenerator",
     "RampModeOutputGenerator",
     "RampUpModeOutputGenerator",
+    "SineModeOutputGenerator",
     "SquareModeOutputGenerator",
     "StaticModeOutputGenerator",
 )

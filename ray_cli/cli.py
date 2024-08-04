@@ -9,6 +9,7 @@ from ray_cli.modes import (
     RampDownModeOutputGenerator,
     RampModeOutputGenerator,
     RampUpModeOutputGenerator,
+    SineModeOutputGenerator,
     SquareModeOutputGenerator,
     StaticModeOutputGenerator,
 )
@@ -175,6 +176,7 @@ def main():
             Mode.RAMP: RampModeOutputGenerator,
             Mode.RAMP_DOWN: RampDownModeOutputGenerator,
             Mode.RAMP_UP: RampUpModeOutputGenerator,
+            Mode.SINE: SineModeOutputGenerator,
             Mode.SQUARE: SquareModeOutputGenerator,
             Mode.STATIC: StaticModeOutputGenerator,
         }
