@@ -24,7 +24,7 @@ MAX_CHANNELS = 512
 MAX_INTENSITY = 255
 
 
-def print_greetings(args):
+def print_report(args):
     title = "Ray CLI"
     body = generate_settings_report(
         args=args,
@@ -53,7 +53,7 @@ def range_limited_int_type(
     return validate
 
 
-def parse_args():
+def parse_args(args=None):
     argparser = argparse.ArgumentParser(
         prog=APP_NAME,
         description=DESCRIPTION,
@@ -162,14 +162,12 @@ def parse_args():
         version=f"{APP_NAME} {__version__}",
     )
 
-    args = argparser.parse_args()
-
-    return args
+    return argparser.parse_args(args)
 
 
-def main():
+def main(args=None):
     try:
-        args = parse_args()
+        args = parse_args(args)
 
         if args.quiet:
             feedback = Feedback.NONE
@@ -208,7 +206,7 @@ def main():
         )
 
         if not args.quiet:
-            print_greetings(args)
+            print_report(args)
 
         app = App(
             generator=generator,
