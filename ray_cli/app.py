@@ -1,13 +1,9 @@
 import itertools
 import time
-from typing import Optional, Union
+from typing import Optional
 
 from ray_cli.dispatchers import SACNDispatcher
-from ray_cli.modes import (
-    ChaseModeOutputGenerator,
-    RampModeOutputGenerator,
-    StaticModeOutputGenerator,
-)
+from ray_cli.modes import GeneratorType
 from ray_cli.utils import Feedback, ProgressBar, TableLogger
 
 
@@ -15,11 +11,7 @@ class App:
     def __init__(
         self,
         dispatcher: SACNDispatcher,
-        generator: Union[
-            ChaseModeOutputGenerator,
-            RampModeOutputGenerator,
-            StaticModeOutputGenerator,
-        ],
+        generator: GeneratorType,
         channels: int,
         fps: int,
         duration: Optional[int] = None,
