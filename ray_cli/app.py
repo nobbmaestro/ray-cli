@@ -25,6 +25,9 @@ class App:
         self.table_logger = TableLogger(channels)
         self.progress_bar = ProgressBar(round(fps * duration) if duration else None)
 
+    def purge_output(self):
+        self.dispatcher.send([0 for _ in range(self.channels)])
+
     def run(
         self,
         feedback: Optional[Feedback] = None,
@@ -59,5 +62,8 @@ class App:
             elapsed_time = time.perf_counter() - t_0
             t_sleep = max(0, 1 / self.fps - elapsed_time)
             time.sleep(t_sleep)
+
+        if not dry:
+            self.purge_output()
 
         self.dispatcher.stop()
