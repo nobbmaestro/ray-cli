@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "ray-cli"
-version = "0.2.0"
+version = "0.2.1"
 description = "Command line utility for generating and broadcast DMX over sACN"
 authors = ["Norbert Batiuk <norbert@batiuk.se>"]
 readme = "README.md"
@@ -27,7 +27,7 @@ sacn = "^1.10.0"
 numpy = "==1.24.4"
 
 [tool.poetry.group.dev.dependencies]
-black = "==24.2.0"
+black = "==24.3.0"
 flake8 = "==5.0.4"
 flake8-pyproject= "==1.2.3"
 isort = "==5.13.2"

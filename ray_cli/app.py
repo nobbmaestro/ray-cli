@@ -1,13 +1,9 @@
 import itertools
 import time
-from typing import Optional, Union
+from typing import Optional
 
 from ray_cli.dispatchers import SACNDispatcher
-from ray_cli.modes import (
-    ChaseModeOutputGenerator,
-    RampModeOutputGenerator,
-    StaticModeOutputGenerator,
-)
+from ray_cli.modes import GeneratorType
 from ray_cli.utils import Feedback, ProgressBar, TableLogger
 
 
@@ -15,11 +11,7 @@ class App:
     def __init__(
         self,
         dispatcher: SACNDispatcher,
-        generator: Union[
-            ChaseModeOutputGenerator,
-            RampModeOutputGenerator,
-            StaticModeOutputGenerator,
-        ],
+        generator: GeneratorType,
         channels: int,
         fps: int,
         duration: Optional[int] = None,
@@ -32,6 +24,9 @@ class App:
 
         self.table_logger = TableLogger(channels)
         self.progress_bar = ProgressBar(round(fps * duration) if duration else None)
+
+    def purge_output(self):
+        self.dispatcher.send([0 for _ in range(self.channels)])
 
     def run(
         self,
@@ -67,5 +62,8 @@ class App:
             elapsed_time = time.perf_counter() - t_0
             t_sleep = max(0, 1 / self.fps - elapsed_time)
             time.sleep(t_sleep)
+
+        if not dry:
+            self.purge_output()
 
         self.dispatcher.stop()
