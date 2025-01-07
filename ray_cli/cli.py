@@ -86,8 +86,8 @@ def parse_args(args=None):
         "-m",
         "--mode",
         type=Mode,
-        default="ramp",
-        choices=[mode.value for mode in Mode],  # type: ignore
+        default=Mode.RAMP,
+        choices=list(Mode),
         help="broadcast mode, defaults to ramp",
     )
     argparser.add_argument(
