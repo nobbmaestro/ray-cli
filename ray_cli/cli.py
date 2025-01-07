@@ -1,7 +1,7 @@
 import argparse
 import ipaddress
 import sys
-from typing import Callable
+from typing import Callable, Dict, Type
 
 from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
@@ -14,6 +14,7 @@ from ray_cli.modes import (
     SquareModeOutputGenerator,
     StaticModeOutputGenerator,
 )
+from ray_cli.modes.types import Generator
 from ray_cli.utils import Feedback, generate_settings_report
 
 from .__version__ import __version__
@@ -188,7 +189,7 @@ def main(args=None):
         else:
             feedback = Feedback.PROGRESS_BAR
 
-        mode_to_generator = {
+        mode_to_generator: Dict[Mode, Type[Generator]] = {
             Mode.CHASE: ChaseModeOutputGenerator,
             Mode.RAMP: RampModeOutputGenerator,
             Mode.RAMP_DOWN: RampDownModeOutputGenerator,

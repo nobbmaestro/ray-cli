@@ -10,7 +10,7 @@ from .generators import (
     StaticModeOutputGenerator,
 )
 
-GeneratorType = Union[
+Generator = Union[
     SineModeOutputGenerator,
     SquareModeOutputGenerator,
     StaticModeOutputGenerator,
