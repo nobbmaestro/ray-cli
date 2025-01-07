@@ -1,4 +1,5 @@
 import argparse
+import importlib.metadata
 import ipaddress
 import sys
 from typing import Callable, Dict, Type
@@ -20,8 +21,9 @@ from ray_cli.utils import Feedback, generate_settings_report
 from .__version__ import __version__
 from .app import App
 
-APP_NAME = "ray-cli"
-DESCRIPTION = "Command line utility for generating and broadcast DMX over sACN."
+PACKAGE_NAME = importlib.metadata.metadata("ray-cli")["Name"]
+PACKAGE_SUMMARY = importlib.metadata.metadata("ray-cli")["Summary"]
+
 MAX_CHANNELS = 512
 MAX_FPS = 10**4
 MAX_INTENSITY = 255
@@ -29,7 +31,7 @@ MAX_UNIVERSE = 8
 
 
 def print_report(args):
-    title = "Ray CLI"
+    title = f"{PACKAGE_NAME} {__version__}"
     body = generate_settings_report(
         args=args,
         max_channels=MAX_CHANNELS,
@@ -74,8 +76,8 @@ def non_zero_float_type() -> Callable:
 
 def parse_args(args=None):
     argparser = argparse.ArgumentParser(
-        prog=APP_NAME,
-        description=DESCRIPTION,
+        prog=PACKAGE_NAME,
+        description=PACKAGE_SUMMARY,
         add_help=False,
     )
 
@@ -173,7 +175,7 @@ def parse_args(args=None):
         "-V",
         "--version",
         action="version",
-        version=f"{APP_NAME} {__version__}",
+        version=f"%(prog)s {__version__}",
     )
 
     return argparser.parse_args(args)
