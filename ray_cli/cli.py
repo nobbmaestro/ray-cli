@@ -1,6 +1,7 @@
 import argparse
 import ipaddress
 import sys
+from typing import Callable
 
 from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
@@ -42,7 +43,7 @@ def print_report(args):
 def range_limited_int_type(
     upper: int,
     lower: int = 1,
-):
+) -> Callable:
     def validate(arg: int) -> int:
         try:
             value = int(arg)
@@ -57,7 +58,7 @@ def range_limited_int_type(
     return validate
 
 
-def non_zero_float_type():
+def non_zero_float_type() -> Callable:
     def validate(arg: float) -> float:
         try:
             value = float(arg)
@@ -94,7 +95,7 @@ def parse_args(args=None):
         "-d",
         "--duration",
         default=None,
-        type=non_zero_float_type(),  # type: ignore
+        type=non_zero_float_type(),
         help="broadcast duration in seconds, defaults to INDEFINITE",
     )
     argparser.add_argument(
@@ -102,34 +103,34 @@ def parse_args(args=None):
         "--universes",
         default=(1,),
         nargs="+",
-        type=range_limited_int_type(upper=MAX_UNIVERSE),  # type: ignore
+        type=range_limited_int_type(upper=MAX_UNIVERSE),
         help="sACN universe(s) to send to",
     )
     argparser.add_argument(
         "-c",
         "--channels",
         default=24,
-        type=range_limited_int_type(upper=MAX_CHANNELS),  # type: ignore
+        type=range_limited_int_type(upper=MAX_CHANNELS),
         help=f"DMX channels at universe to send to, (1, ...{MAX_CHANNELS})",
     )
     argparser.add_argument(
         "-i",
         "--intensity",
         default=10,
-        type=range_limited_int_type(upper=MAX_INTENSITY),  # type: ignore
+        type=range_limited_int_type(upper=MAX_INTENSITY),
         help=f"DMX channels output intensity, (1, ...{MAX_INTENSITY})",
     )
     argparser.add_argument(
         "-f",
         "--frequency",
         default=1.0,
-        type=non_zero_float_type(),  # type: ignore
+        type=non_zero_float_type(),
         help="signal frequency",
     )
     argparser.add_argument(
         "--fps",
         default=10,
-        type=range_limited_int_type(upper=MAX_FPS),  # type: ignore
+        type=range_limited_int_type(upper=MAX_FPS),
         help="frames per second per universe",
     )
     argparser.add_argument(
