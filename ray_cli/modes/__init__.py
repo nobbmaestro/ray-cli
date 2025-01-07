@@ -8,11 +8,11 @@ from .generators import (
     StaticModeOutputGenerator,
 )
 from .mode import Mode
-from .types import GeneratorType
+from .types import Generator
 
 __all__ = (
     "Mode",
-    "GeneratorType",
+    "Generator",
     "ChaseModeOutputGenerator",
     "RampDownModeOutputGenerator",
     "RampModeOutputGenerator",

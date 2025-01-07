@@ -1,7 +1,7 @@
 import enum
 
 
-class Mode(str, enum.Enum):
+class Mode(enum.Enum):
     CHASE = "chase"
     RAMP = "ramp"
     RAMP_DOWN = "ramp-down"
@@ -9,3 +9,6 @@ class Mode(str, enum.Enum):
     SINE = "sine"
     SQUARE = "square"
     STATIC = "static"
+
+    def __str__(self):
+        return self.value

@@ -1,6 +1,8 @@
 import argparse
+import importlib.metadata
 import ipaddress
 import sys
+from typing import Callable, Dict, Type
 
 from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
@@ -13,13 +15,15 @@ from ray_cli.modes import (
     SquareModeOutputGenerator,
     StaticModeOutputGenerator,
 )
-from ray_cli.utils import Feedback, generate_settings_report
+from ray_cli.modes.types import Generator
+from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
 from .app import App
 
-APP_NAME = "ray-cli"
-DESCRIPTION = "Command line utility for generating and broadcast DMX over sACN."
+PACKAGE_NAME = importlib.metadata.metadata("ray-cli")["Name"]
+PACKAGE_SUMMARY = importlib.metadata.metadata("ray-cli")["Summary"]
+
 MAX_CHANNELS = 512
 MAX_FPS = 10**4
 MAX_INTENSITY = 255
@@ -27,22 +31,19 @@ MAX_UNIVERSE = 8
 
 
 def print_report(args):
-    title = "Ray CLI"
+    title = f"{PACKAGE_NAME} {__version__}"
     body = generate_settings_report(
         args=args,
         max_channels=MAX_CHANNELS,
         max_intensity=MAX_INTENSITY,
     )
-
-    greetings = f"\n{title}\n\n{body}\n"
-
-    print(greetings)
+    print(f"\n{title}\n\n{body}\n")
 
 
 def range_limited_int_type(
     upper: int,
     lower: int = 1,
-):
+) -> Callable:
     def validate(arg: int) -> int:
         try:
             value = int(arg)
@@ -57,7 +58,7 @@ def range_limited_int_type(
     return validate
 
 
-def non_zero_float_type():
+def non_zero_float_type() -> Callable:
     def validate(arg: float) -> float:
         try:
             value = float(arg)
@@ -72,71 +73,72 @@ def non_zero_float_type():
 
 def parse_args(args=None):
     argparser = argparse.ArgumentParser(
-        prog=APP_NAME,
-        description=DESCRIPTION,
+        prog=PACKAGE_NAME,
+        description=PACKAGE_SUMMARY,
         add_help=False,
+        formatter_class=CustomHelpFormatter,
     )
 
     argparser.add_argument(
         "IP_ADDRESS",
         type=ipaddress.IPv4Address,
-        help="IP address of the dmx source",
+        help="IP address of the DMX source",
     )
     argparser.add_argument(
         "-m",
         "--mode",
         type=Mode,
-        default="ramp",
-        choices=[mode.value for mode in Mode],  # type: ignore
-        help="broadcast mode, defaults to ramp",
+        default=Mode.RAMP,
+        choices=list(Mode),
+        help="DMX signal shape mode (default: %(default)s)",
     )
     argparser.add_argument(
         "-d",
         "--duration",
         default=None,
-        type=non_zero_float_type(),  # type: ignore
-        help="broadcast duration in seconds, defaults to INDEFINITE",
+        type=non_zero_float_type(),
+        help="broadcast duration in seconds (default: INDEFINITE)",
     )
     argparser.add_argument(
         "-u",
         "--universes",
         default=(1,),
         nargs="+",
-        type=range_limited_int_type(upper=MAX_UNIVERSE),  # type: ignore
-        help="sACN universe(s) to send to",
+        type=range_limited_int_type(upper=MAX_UNIVERSE),
+        help="sACN universe(s) to send to (default: 1)",
     )
     argparser.add_argument(
         "-c",
         "--channels",
         default=24,
-        type=range_limited_int_type(upper=MAX_CHANNELS),  # type: ignore
-        help=f"DMX channels at universe to send to, (1, ...{MAX_CHANNELS})",
+        type=range_limited_int_type(upper=MAX_CHANNELS),
+        help=f"DMX channels at universe to send to (range: 1-{MAX_CHANNELS}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
     )
     argparser.add_argument(
         "-i",
         "--intensity",
         default=10,
-        type=range_limited_int_type(upper=MAX_INTENSITY),  # type: ignore
-        help=f"DMX channels output intensity, (1, ...{MAX_INTENSITY})",
+        type=range_limited_int_type(upper=MAX_INTENSITY),
+        help=f"DMX channels output intensity (range: 1-{MAX_INTENSITY}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
     )
     argparser.add_argument(
         "-f",
         "--frequency",
         default=1.0,
-        type=non_zero_float_type(),  # type: ignore
-        help="signal frequency",
+        type=non_zero_float_type(),
+        help="frequency of the generated signal (default: %(default)s)",
     )
     argparser.add_argument(
         "--fps",
         default=10,
-        type=range_limited_int_type(upper=MAX_FPS),  # type: ignore
-        help="frames per second per universe",
+        type=range_limited_int_type(upper=MAX_FPS),
+        help="frames per second per universe (default: %(default)s)",
     )
     argparser.add_argument(
         "--dst",
         type=ipaddress.IPv4Address,
         default=None,
-        help="IP address of the dmx destination, defaults to MULTICAST",
+        help="IP address of the dmx destination (default: MULTICAST)",
     )
 
     display_group = argparser.add_argument_group("display options")
@@ -157,7 +159,7 @@ def parse_args(args=None):
     operational_group.add_argument(
         "--dry",
         action="store_true",
-        help="simulate outputs without broadcasting (dry run mode), assumes verbose mode",  # noqa: E501 # pylint: disable=line-too-long
+        help="simulate outputs without broadcast",  # noqa: E501 # pylint: disable=line-too-long
     )
 
     query_group = argparser.add_argument_group("query options")
@@ -168,9 +170,10 @@ def parse_args(args=None):
         help="print help and exit",
     )
     query_group.add_argument(
+        "-V",
         "--version",
         action="version",
-        version=f"{APP_NAME} {__version__}",
+        version=f"%(prog)s {__version__}",
     )
 
     return argparser.parse_args(args)
@@ -187,7 +190,7 @@ def main(args=None):
         else:
             feedback = Feedback.PROGRESS_BAR
 
-        mode_to_generator = {
+        mode_to_generator: Dict[Mode, Type[Generator]] = {
             Mode.CHASE: ChaseModeOutputGenerator,
             Mode.RAMP: RampModeOutputGenerator,
             Mode.RAMP_DOWN: RampDownModeOutputGenerator,
