@@ -1,1 +1,3 @@
-__version__ = "0.2.1"
+import importlib.metadata
+
+__version__ = importlib.metadata.version("ray-cli")
