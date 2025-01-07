@@ -8,7 +8,7 @@ build:
 
 install: build
 	@echo "Installing..."
-	pip install dist/*.whl
+	pipx install --force dist/*.whl
 
 publish: build
 	@echo "Publishing..."
@@ -16,5 +16,5 @@ publish: build
 
 clean:
 	@echo "Cleaning up..."
+	pipx uninstall ray-cli
 	rm -r dist
-	pip uninstall -y ray-cli

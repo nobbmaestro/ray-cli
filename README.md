@@ -9,6 +9,12 @@ Command line utility for generating and broadcast DMX over sACN.
 
 ## Installation
 
+### Pipx (Recommended)
+
+```sh
+pipx install ray-cli
+```
+
 ### Pip
 
 ```sh
