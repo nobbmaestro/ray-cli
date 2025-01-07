@@ -16,7 +16,7 @@ from ray_cli.modes import (
     StaticModeOutputGenerator,
 )
 from ray_cli.modes.types import Generator
-from ray_cli.utils import Feedback, generate_settings_report
+from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
 from .app import App
@@ -37,10 +37,7 @@ def print_report(args):
         max_channels=MAX_CHANNELS,
         max_intensity=MAX_INTENSITY,
     )
-
-    greetings = f"\n{title}\n\n{body}\n"
-
-    print(greetings)
+    print(f"\n{title}\n\n{body}\n")
 
 
 def range_limited_int_type(
@@ -79,12 +76,13 @@ def parse_args(args=None):
         prog=PACKAGE_NAME,
         description=PACKAGE_SUMMARY,
         add_help=False,
+        formatter_class=CustomHelpFormatter,
     )
 
     argparser.add_argument(
         "IP_ADDRESS",
         type=ipaddress.IPv4Address,
-        help="IP address of the dmx source",
+        help="IP address of the DMX source",
     )
     argparser.add_argument(
         "-m",
@@ -92,14 +90,14 @@ def parse_args(args=None):
         type=Mode,
         default=Mode.RAMP,
         choices=list(Mode),
-        help="broadcast mode, defaults to ramp",
+        help="DMX signal shape mode (default: %(default)s)",
     )
     argparser.add_argument(
         "-d",
         "--duration",
         default=None,
         type=non_zero_float_type(),
-        help="broadcast duration in seconds, defaults to INDEFINITE",
+        help="broadcast duration in seconds (default: INDEFINITE)",
     )
     argparser.add_argument(
         "-u",
@@ -107,40 +105,40 @@ def parse_args(args=None):
         default=(1,),
         nargs="+",
         type=range_limited_int_type(upper=MAX_UNIVERSE),
-        help="sACN universe(s) to send to",
+        help="sACN universe(s) to send to (default: 1)",
     )
     argparser.add_argument(
         "-c",
         "--channels",
         default=24,
         type=range_limited_int_type(upper=MAX_CHANNELS),
-        help=f"DMX channels at universe to send to, (1, ...{MAX_CHANNELS})",
+        help=f"DMX channels at universe to send to (range: 1-{MAX_CHANNELS}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
     )
     argparser.add_argument(
         "-i",
         "--intensity",
         default=10,
         type=range_limited_int_type(upper=MAX_INTENSITY),
-        help=f"DMX channels output intensity, (1, ...{MAX_INTENSITY})",
+        help=f"DMX channels output intensity (range: 1-{MAX_INTENSITY}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
     )
     argparser.add_argument(
         "-f",
         "--frequency",
         default=1.0,
         type=non_zero_float_type(),
-        help="signal frequency",
+        help="frequency of the generated signal (default: %(default)s)",
     )
     argparser.add_argument(
         "--fps",
         default=10,
         type=range_limited_int_type(upper=MAX_FPS),
-        help="frames per second per universe",
+        help="frames per second per universe (default: %(default)s)",
     )
     argparser.add_argument(
         "--dst",
         type=ipaddress.IPv4Address,
         default=None,
-        help="IP address of the dmx destination, defaults to MULTICAST",
+        help="IP address of the dmx destination (default: MULTICAST)",
     )
 
     display_group = argparser.add_argument_group("display options")
@@ -161,7 +159,7 @@ def parse_args(args=None):
     operational_group.add_argument(
         "--dry",
         action="store_true",
-        help="simulate outputs without broadcasting (dry run mode), assumes verbose mode",  # noqa: E501 # pylint: disable=line-too-long
+        help="simulate outputs without broadcast",  # noqa: E501 # pylint: disable=line-too-long
     )
 
     query_group = argparser.add_argument_group("query options")
