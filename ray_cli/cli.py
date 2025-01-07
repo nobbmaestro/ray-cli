@@ -170,6 +170,7 @@ def parse_args(args=None):
         help="print help and exit",
     )
     query_group.add_argument(
+        "-V",
         "--version",
         action="version",
         version=f"{APP_NAME} {__version__}",
