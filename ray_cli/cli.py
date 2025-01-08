@@ -6,16 +6,16 @@ from typing import Callable, Dict, Type
 
 from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
-    ChaseModeOutputGenerator,
+    ChaseModeDmxDataGenerator,
     Mode,
-    RampDownModeOutputGenerator,
-    RampModeOutputGenerator,
-    RampUpModeOutputGenerator,
-    SineModeOutputGenerator,
-    SquareModeOutputGenerator,
-    StaticModeOutputGenerator,
+    RampDownModeDmxDataGenerator,
+    RampModeDmxDataGenerator,
+    RampUpModeDmxDataGenerator,
+    SineModeDmxDataGenerator,
+    SquareModeDmxDataGenerator,
+    StaticModeDmxDataGenerator,
 )
-from ray_cli.modes.types import Generator
+from ray_cli.modes.types import DmxDataGenerator
 from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
@@ -190,14 +190,14 @@ def main(args=None):
         else:
             feedback = Feedback.PROGRESS_BAR
 
-        mode_to_generator: Dict[Mode, Type[Generator]] = {
-            Mode.CHASE: ChaseModeOutputGenerator,
-            Mode.RAMP: RampModeOutputGenerator,
-            Mode.RAMP_DOWN: RampDownModeOutputGenerator,
-            Mode.RAMP_UP: RampUpModeOutputGenerator,
-            Mode.SINE: SineModeOutputGenerator,
-            Mode.SQUARE: SquareModeOutputGenerator,
-            Mode.STATIC: StaticModeOutputGenerator,
+        mode_to_generator: Dict[Mode, Type[DmxDataGenerator]] = {
+            Mode.CHASE: ChaseModeDmxDataGenerator,
+            Mode.RAMP: RampModeDmxDataGenerator,
+            Mode.RAMP_DOWN: RampDownModeDmxDataGenerator,
+            Mode.RAMP_UP: RampUpModeDmxDataGenerator,
+            Mode.SINE: SineModeDmxDataGenerator,
+            Mode.SQUARE: SquareModeDmxDataGenerator,
+            Mode.STATIC: StaticModeDmxDataGenerator,
         }
 
         generator_class = mode_to_generator.get(args.mode)

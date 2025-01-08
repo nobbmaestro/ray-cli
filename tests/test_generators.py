@@ -1,13 +1,13 @@
 import pytest
 
-from ray_cli.modes import RampModeOutputGenerator
+from ray_cli.modes import RampModeDmxDataGenerator
 from ray_cli.modes.generators import (
-    ChaseModeOutputGenerator,
-    RampDownModeOutputGenerator,
-    RampUpModeOutputGenerator,
-    SineModeOutputGenerator,
-    SquareModeOutputGenerator,
-    StaticModeOutputGenerator,
+    ChaseModeDmxDataGenerator,
+    RampDownModeDmxDataGenerator,
+    RampUpModeDmxDataGenerator,
+    SineModeDmxDataGenerator,
+    SquareModeDmxDataGenerator,
+    StaticModeDmxDataGenerator,
 )
 
 
@@ -17,7 +17,7 @@ from ray_cli.modes.generators import (
     (10, [[10]] * 10),
 ])  # fmt: skip
 def test_static_mode_output_shape(fps, expected, channels=1, frequency=1, intensity=10):
-    generator = StaticModeOutputGenerator(
+    generator = StaticModeDmxDataGenerator(
         channels=channels,
         fps=fps,
         frequency=frequency,
@@ -36,7 +36,7 @@ def test_static_mode_output_shape(fps, expected, channels=1, frequency=1, intens
     (10, [[0], [1], [2], [3], [4], [4], [3], [2], [1], [0]]),
 ])  # fmt: skip
 def test_ramp_mode_output_shape(fps, expected, channels=1, frequency=1, intensity=4):
-    generator = RampModeOutputGenerator(
+    generator = RampModeDmxDataGenerator(
         channels=channels,
         fps=fps,
         frequency=frequency,
@@ -55,7 +55,7 @@ def test_ramp_mode_output_shape(fps, expected, channels=1, frequency=1, intensit
     (9,  [[0], [1], [1], [2], [2], [3], [3], [4], [4]]),
 ])  # fmt: skip
 def test_ramp_up_mode_output_shape(fps, expected, channels=1, frequency=1, intensity=4):
-    generator = RampUpModeOutputGenerator(
+    generator = RampUpModeDmxDataGenerator(
         channels=channels,
         fps=fps,
         frequency=frequency,
@@ -76,7 +76,7 @@ def test_ramp_up_mode_output_shape(fps, expected, channels=1, frequency=1, inten
 def test_ramp_down_mode_output_shape(
     fps, expected, channels=1, frequency=1, intensity=4
 ):
-    generator = RampDownModeOutputGenerator(
+    generator = RampDownModeDmxDataGenerator(
         channels=channels,
         fps=fps,
         frequency=frequency,
@@ -96,7 +96,7 @@ def test_ramp_down_mode_output_shape(
     (6,  [[10, 0, 0], [10, 0, 0], [0, 10, 0], [0, 10, 0], [0, 0, 10], [0, 0, 10]]),
 ])  # fmt: skip
 def test_chase_mode_output_shape(fps, expected, channels=3, frequency=1, intensity=10):
-    generator = ChaseModeOutputGenerator(
+    generator = ChaseModeDmxDataGenerator(
         channels=channels,
         fps=fps,
         frequency=frequency,
@@ -115,7 +115,7 @@ def test_chase_mode_output_shape(fps, expected, channels=3, frequency=1, intensi
     (8,  [[0], [0], [0], [0], [10], [10], [10], [10]]),
 ])  # fmt: skip
 def test_square_mode_output_shape(fps, expected, channels=1, frequency=1, intensity=10):
-    generator = SquareModeOutputGenerator(
+    generator = SquareModeDmxDataGenerator(
         channels=channels,
         fps=fps,
         frequency=frequency,
@@ -134,7 +134,7 @@ def test_square_mode_output_shape(fps, expected, channels=1, frequency=1, intens
     (8,  [[0], [5], [8], [10], [10], [8], [5], [1]]),
 ])  # fmt: skip
 def test_sine_mode_output_shape(fps, expected, channels=1, frequency=1, intensity=10):
-    generator = SineModeOutputGenerator(
+    generator = SineModeDmxDataGenerator(
         channels=channels,
         fps=fps,
         frequency=frequency,
@@ -148,13 +148,13 @@ def test_sine_mode_output_shape(fps, expected, channels=1, frequency=1, intensit
 
 
 @pytest.mark.parametrize("generator_class", [
-    ChaseModeOutputGenerator,
-    RampDownModeOutputGenerator,
-    RampModeOutputGenerator,
-    RampUpModeOutputGenerator,
-    SineModeOutputGenerator,
-    SquareModeOutputGenerator,
-    StaticModeOutputGenerator,
+    ChaseModeDmxDataGenerator,
+    RampDownModeDmxDataGenerator,
+    RampModeDmxDataGenerator,
+    RampUpModeDmxDataGenerator,
+    SineModeDmxDataGenerator,
+    SquareModeDmxDataGenerator,
+    StaticModeDmxDataGenerator,
 ])  # fmt: skip
 @pytest.mark.parametrize("channels", [0, 1, 2, 3, 5, 10, 100, 512, 10000, 100000])
 def test_channels_sweep(generator_class, channels, fps=6, frequency=1, intensity=10):
@@ -171,13 +171,13 @@ def test_channels_sweep(generator_class, channels, fps=6, frequency=1, intensity
 
 
 @pytest.mark.parametrize("generator_class", [
-    ChaseModeOutputGenerator,
-    RampDownModeOutputGenerator,
-    RampModeOutputGenerator,
-    RampUpModeOutputGenerator,
-    SineModeOutputGenerator,
-    SquareModeOutputGenerator,
-    StaticModeOutputGenerator,
+    ChaseModeDmxDataGenerator,
+    RampDownModeDmxDataGenerator,
+    RampModeDmxDataGenerator,
+    RampUpModeDmxDataGenerator,
+    SineModeDmxDataGenerator,
+    SquareModeDmxDataGenerator,
+    StaticModeDmxDataGenerator,
 ])  # fmt: skip
 @pytest.mark.parametrize("intensity", [1, 2, 3, 5, 10, 100, 255])
 def test_intensity_sweep(generator_class, intensity, channels=1, fps=6, frequency=1):

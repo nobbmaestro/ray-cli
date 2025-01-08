@@ -3,7 +3,7 @@ import time
 from typing import Optional
 
 from ray_cli.dispatchers import SACNDispatcher
-from ray_cli.modes import Generator
+from ray_cli.modes import DmxDataGenerator
 from ray_cli.utils import Feedback, ProgressBar, TableLogger
 
 
@@ -11,7 +11,7 @@ class App:
     def __init__(
         self,
         dispatcher: SACNDispatcher,
-        generator: Generator,
+        generator: DmxDataGenerator,
         channels: int,
         fps: int,
         duration: Optional[int] = None,

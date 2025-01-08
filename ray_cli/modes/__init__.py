@@ -1,23 +1,23 @@
 from .generators import (
-    ChaseModeOutputGenerator,
-    RampDownModeOutputGenerator,
-    RampModeOutputGenerator,
-    RampUpModeOutputGenerator,
-    SineModeOutputGenerator,
-    SquareModeOutputGenerator,
-    StaticModeOutputGenerator,
+    ChaseModeDmxDataGenerator,
+    RampDownModeDmxDataGenerator,
+    RampModeDmxDataGenerator,
+    RampUpModeDmxDataGenerator,
+    SineModeDmxDataGenerator,
+    SquareModeDmxDataGenerator,
+    StaticModeDmxDataGenerator,
 )
 from .mode import Mode
-from .types import Generator
+from .types import DmxDataGenerator
 
 __all__ = (
     "Mode",
-    "Generator",
-    "ChaseModeOutputGenerator",
-    "RampDownModeOutputGenerator",
-    "RampModeOutputGenerator",
-    "RampUpModeOutputGenerator",
-    "SineModeOutputGenerator",
-    "SquareModeOutputGenerator",
-    "StaticModeOutputGenerator",
+    "DmxDataGenerator",
+    "ChaseModeDmxDataGenerator",
+    "RampDownModeDmxDataGenerator",
+    "RampModeDmxDataGenerator",
+    "RampUpModeDmxDataGenerator",
+    "SineModeDmxDataGenerator",
+    "SquareModeDmxDataGenerator",
+    "StaticModeDmxDataGenerator",
 )

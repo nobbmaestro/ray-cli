@@ -43,7 +43,7 @@ class BaseGenerator(ABC):
         raise NotImplementedError()
 
 
-class StaticModeOutputGenerator(BaseGenerator):
+class StaticModeDmxDataGenerator(BaseGenerator):
 
     def next(self) -> List[int]:
         output_coeff = next(self.generator)
@@ -60,7 +60,7 @@ class StaticModeOutputGenerator(BaseGenerator):
         return itertools.cycle([intensity])
 
 
-class RampModeOutputGenerator(BaseGenerator):
+class RampModeDmxDataGenerator(BaseGenerator):
 
     def next(self) -> List[int]:
         output_coeff = next(self.generator)
@@ -83,7 +83,7 @@ class RampModeOutputGenerator(BaseGenerator):
         )
 
 
-class RampUpModeOutputGenerator(BaseGenerator):
+class RampUpModeDmxDataGenerator(BaseGenerator):
 
     def next(self) -> List[int]:
         output_coeff = next(self.generator)
@@ -105,7 +105,7 @@ class RampUpModeOutputGenerator(BaseGenerator):
         )
 
 
-class RampDownModeOutputGenerator(BaseGenerator):
+class RampDownModeDmxDataGenerator(BaseGenerator):
 
     def next(self) -> List[int]:
         output_coeff = next(self.generator)
@@ -127,7 +127,7 @@ class RampDownModeOutputGenerator(BaseGenerator):
         )
 
 
-class ChaseModeOutputGenerator(BaseGenerator):
+class ChaseModeDmxDataGenerator(BaseGenerator):
 
     def next(self) -> List[int]:
         channel = round(next(self.generator))
@@ -145,7 +145,7 @@ class ChaseModeOutputGenerator(BaseGenerator):
         return itertools.cycle(numpy.linspace(0, channels - 1, size))
 
 
-class SquareModeOutputGenerator(BaseGenerator):
+class SquareModeDmxDataGenerator(BaseGenerator):
 
     def next(self) -> List[int]:
         output_coeff = next(self.generator)
@@ -168,7 +168,7 @@ class SquareModeOutputGenerator(BaseGenerator):
         )
 
 
-class SineModeOutputGenerator(BaseGenerator):
+class SineModeDmxDataGenerator(BaseGenerator):
 
     def next(self) -> List[int]:
         output_coeff = next(self.generator)
