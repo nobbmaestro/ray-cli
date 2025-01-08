@@ -1,6 +1,7 @@
 import argparse
 import importlib.metadata
 import ipaddress
+import socket
 import sys
 from typing import Callable, Dict, Type
 
@@ -82,8 +83,10 @@ def parse_args(args=None):
 
     argparser.add_argument(
         "IP_ADDRESS",
+        nargs="?",
         type=ipaddress.IPv4Address,
-        help="IP address of the DMX source",
+        default=socket.gethostbyname(socket.gethostname()),
+        help="IP address of the DMX source (default: %(default)s)",
     )
     argparser.add_argument(
         "-m",
