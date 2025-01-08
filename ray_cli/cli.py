@@ -184,7 +184,7 @@ def main(args=None):
         args = parse_args(args)
 
         if args.quiet:
-            feedback = Feedback.NONE
+            feedback = None
         elif args.verbose or args.dry:
             feedback = Feedback.TABULAR
         else:
