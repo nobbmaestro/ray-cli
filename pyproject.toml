@@ -5,7 +5,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.poetry]
 name = "ray-cli"
 version = "0.3.0"
-description = "Command line utility for generating and broadcast DMX over sACN"
+description = "Command-line utility for generating and broadcasting DMX over sACN"
 authors = ["Norbert Batiuk <norbert@batiuk.se>"]
 readme = "README.md"
 license = "MIT"

@@ -1,13 +1,19 @@
 # Ray CLI
 
-Command line utility for generating and broadcast DMX over sACN.
-
 [![GitHub Release](https://img.shields.io/github/v/release/nobbmaestro/ray-cli)](github-release)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/ray-cli/development)](github-last-commit)
 [![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.3.0/development)](githut-commits-since)
 ![Tests](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
+![License](https://img.shields.io/github/license/nobbmaestro/ray-cli)
+
+Ray CLI is a command-line utility designed for generating and broadcasting DMX data over sACN.
 
 ## Installation
+
+### Prerequisites
+
+- Python 3.7+ is required.
+- **_Optional_** For Pipx, ensure it is installed by running `pip install pipx`
 
 ### Pipx (Recommended)
 
@@ -31,7 +37,23 @@ make install
 
 ## Usage
 
-```console
+### Basic Example
+
+To broadcast a ramp DMX signal to a specific IP address:
+
+```sh
+ray-cli 192.168.86.198 \
+    --dst 192.168.86.67 \
+    --mode chase \
+    --universes 1 2 \
+    --channels 24 \
+    --fps 50 \
+    --duration 60
+```
+
+### Complete List of Command-Line Options
+
+```sh
 usage: ray-cli [-m {chase,ramp,ramp-down,ramp-up,sine,square,static}]
                [-d DURATION] [-u UNIVERSES [UNIVERSES ...]] [-c CHANNELS]
                [-i INTENSITY] [-f FREQUENCY] [--fps FPS] [--dst DST] [-v] [-q]
@@ -45,8 +67,7 @@ positional arguments:
 
 options:
   -m, --mode {chase,ramp,ramp-down,ramp-up,sine,square,static}
-                                             DMX signal shape mode (default:
-                                             ramp)
+                                             DMX signal shape mode (default: ramp)
   -d, --duration DURATION                    broadcast duration in seconds
                                              (default: INDEFINITE)
   -u, --universes UNIVERSES [UNIVERSES ...]  sACN universe(s) to send to
