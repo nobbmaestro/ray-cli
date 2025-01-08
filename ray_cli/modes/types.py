@@ -1,4 +1,4 @@
-from typing import Sequence, Union
+from typing import Union
 
 from .generators import (
     ChaseModeDmxDataGenerator,
@@ -9,8 +9,6 @@ from .generators import (
     SquareModeDmxDataGenerator,
     StaticModeDmxDataGenerator,
 )
-
-DmxData = Sequence[int]
 
 DmxDataGenerator = Union[
     SineModeDmxDataGenerator,

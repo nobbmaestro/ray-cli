@@ -4,6 +4,8 @@ from typing import Optional, Sequence
 
 import sacn
 
+from ray_cli.modes import DmxData
+
 logger = logging.getLogger(__name__)
 
 
@@ -45,7 +47,7 @@ class SACNDispatcher:
         self.sender.stop()
         self._started = False
 
-    def send(self, payload):
+    def send(self, payload: DmxData):
         for universe in self.universes:
             self.sender[universe].dmx_data = payload
         self.sender.flush()

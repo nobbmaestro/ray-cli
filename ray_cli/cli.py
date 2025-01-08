@@ -26,6 +26,7 @@ PACKAGE_SUMMARY = importlib.metadata.metadata("ray-cli")["Summary"]
 
 MAX_CHANNELS = 512
 MAX_FPS = 10**4
+MIN_INTENSITY = 0
 MAX_INTENSITY = 255
 MAX_UNIVERSE = 8
 
@@ -122,6 +123,13 @@ def parse_args(args=None):
         help=f"DMX channels output intensity (range: 1-{MAX_INTENSITY}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
     )
     argparser.add_argument(
+        "-I",
+        "--intensity-min",
+        default=0,
+        type=range_limited_int_type(lower=MIN_INTENSITY, upper=MAX_INTENSITY),
+        help=f"DMX channels minimum output intensity (range: {MIN_INTENSITY}-{MAX_INTENSITY}, default: 0)",  # noqa: E501 # pylint: disable=line-too-long
+    )
+    argparser.add_argument(
         "-f",
         "--frequency",
         default=1.0,
@@ -213,7 +221,8 @@ def main(args=None):
             channels=args.channels,
             fps=args.fps,
             frequency=args.frequency,
-            intensity=args.intensity,
+            intensity_upper=args.intensity,
+            intensity_lower=args.intensity_min,
         )
 
         dispatcher = SACNDispatcher(

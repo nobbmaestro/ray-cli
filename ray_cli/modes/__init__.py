@@ -1,5 +1,6 @@
 from .generators import (
     ChaseModeDmxDataGenerator,
+    DmxData,
     RampDownModeDmxDataGenerator,
     RampModeDmxDataGenerator,
     RampUpModeDmxDataGenerator,
@@ -12,6 +13,7 @@ from .types import DmxDataGenerator
 
 __all__ = (
     "Mode",
+    "DmxData",
     "DmxDataGenerator",
     "ChaseModeDmxDataGenerator",
     "RampDownModeDmxDataGenerator",

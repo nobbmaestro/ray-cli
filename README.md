@@ -56,16 +56,16 @@ ray-cli 192.168.86.198 \
 ```sh
 usage: ray-cli [-m {chase,ramp,ramp-down,ramp-up,sine,square,static}]
                [-d DURATION] [-u UNIVERSES [UNIVERSES ...]] [-c CHANNELS]
-               [-i INTENSITY] [-f FREQUENCY] [--fps FPS] [--dst DST] [-v] [-q]
-               [--dry] [-h] [-V]
-               IP_ADDRESS
+               [-i INTENSITY] [-I INTENSITY_MIN] [-f FREQUENCY] [--fps FPS]
+               [--dst DST] [-v] [-q] [--dry] [--purge] [-h] [-V]
+               [IP_ADDRESS]
 
 Command line utility for generating and broadcast DMX over sACN
 
 positional arguments:
   IP_ADDRESS                                 IP address of the DMX source
 
-options:
+optional arguments:
   -m, --mode {chase,ramp,ramp-down,ramp-up,sine,square,static}
                                              DMX signal shape mode (default: ramp)
   -d, --duration DURATION                    broadcast duration in seconds
@@ -76,6 +76,9 @@ options:
                                              (range: 1-512, default: 24)
   -i, --intensity INTENSITY                  DMX channels output intensity
                                              (range: 1-255, default: 10)
+  -I, --intensity-min INTENSITY_MIN          DMX channels minimum output
+                                             intensity (range: 0-255, default:
+                                             0)
   -f, --frequency FREQUENCY                  frequency of the generated signal
                                              (default: 1.0)
   --fps FPS                                  frames per second per universe
@@ -93,6 +96,5 @@ operational options:
 
 query options:
   -h, --help                                 print help and exit
-  -V, --version                              show program's version number and
-                                             exit
+  -V, --version                              show program's version number and exit
 ```

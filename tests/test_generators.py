@@ -21,7 +21,7 @@ def test_static_mode_output_shape(fps, expected, channels=1, frequency=1, intens
         channels=channels,
         fps=fps,
         frequency=frequency,
-        intensity=intensity,
+        intensity_upper=intensity,
     )
 
     for _ in range(3):  # we run 3 cycles
@@ -40,7 +40,7 @@ def test_ramp_mode_output_shape(fps, expected, channels=1, frequency=1, intensit
         channels=channels,
         fps=fps,
         frequency=frequency,
-        intensity=intensity,
+        intensity_upper=intensity,
     )
 
     for _ in range(3):  # we run 3 cycles
@@ -59,7 +59,7 @@ def test_ramp_up_mode_output_shape(fps, expected, channels=1, frequency=1, inten
         channels=channels,
         fps=fps,
         frequency=frequency,
-        intensity=intensity,
+        intensity_upper=intensity,
     )
 
     for _ in range(3):  # we run 3 cycles
@@ -80,7 +80,7 @@ def test_ramp_down_mode_output_shape(
         channels=channels,
         fps=fps,
         frequency=frequency,
-        intensity=intensity,
+        intensity_upper=intensity,
     )
 
     for _ in range(3):  # we run 3 cycles
@@ -100,7 +100,7 @@ def test_chase_mode_output_shape(fps, expected, channels=3, frequency=1, intensi
         channels=channels,
         fps=fps,
         frequency=frequency,
-        intensity=intensity,
+        intensity_upper=intensity,
     )
 
     for _ in range(3):  # we run 3 cycles
@@ -119,7 +119,7 @@ def test_square_mode_output_shape(fps, expected, channels=1, frequency=1, intens
         channels=channels,
         fps=fps,
         frequency=frequency,
-        intensity=intensity,
+        intensity_upper=intensity,
     )
 
     for _ in range(3):  # we run 3 cycles
@@ -138,7 +138,7 @@ def test_sine_mode_output_shape(fps, expected, channels=1, frequency=1, intensit
         channels=channels,
         fps=fps,
         frequency=frequency,
-        intensity=intensity,
+        intensity_upper=intensity,
     )
 
     for _ in range(3):  # we run 3 cycles
@@ -162,7 +162,7 @@ def test_channels_sweep(generator_class, channels, fps=6, frequency=1, intensity
         channels=channels,
         fps=fps,
         frequency=frequency,
-        intensity=intensity,
+        intensity_upper=intensity,
     )
 
     actual = next(generator)
@@ -179,13 +179,19 @@ def test_channels_sweep(generator_class, channels, fps=6, frequency=1, intensity
     SquareModeDmxDataGenerator,
     StaticModeDmxDataGenerator,
 ])  # fmt: skip
-@pytest.mark.parametrize("intensity", [1, 2, 3, 5, 10, 100, 255])
-def test_intensity_sweep(generator_class, intensity, channels=1, fps=6, frequency=1):
+@pytest.mark.parametrize("intensity_upper", [1, 2, 3, 5, 10, 100, 255])
+def test_intensity_upper_sweep(
+    generator_class,
+    intensity_upper,
+    channels=2,
+    fps=6,
+    frequency=1,
+):
     generator = generator_class(
         channels=channels,
         fps=fps,
         frequency=frequency,
-        intensity=intensity,
+        intensity_upper=intensity_upper,
     )
 
     output = [next(generator) for _ in range(fps)]
@@ -193,4 +199,38 @@ def test_intensity_sweep(generator_class, intensity, channels=1, fps=6, frequenc
         i for sublist in output for i in sublist
     )  # find max value in the nested list
 
-    assert pytest.approx(actual, abs=actual * 0.05) == intensity
+    assert pytest.approx(actual, abs=actual * 0.05) == intensity_upper
+
+
+@pytest.mark.parametrize("generator_class", [
+    ChaseModeDmxDataGenerator,
+    RampDownModeDmxDataGenerator,
+    RampModeDmxDataGenerator,
+    RampUpModeDmxDataGenerator,
+    SineModeDmxDataGenerator,
+    SquareModeDmxDataGenerator,
+])  # fmt: skip
+@pytest.mark.parametrize("intensity_lower", [1, 2, 3, 5, 10, 100, 255])
+def test_intensity_lower_sweep(
+    generator_class,
+    intensity_lower,
+    intensity_upper=255,
+    channels=2,
+    fps=6,
+    frequency=1,
+):
+    generator = generator_class(
+        channels=channels,
+        fps=fps,
+        frequency=frequency,
+        intensity_lower=intensity_lower,
+        intensity_upper=intensity_upper,
+    )
+
+    output = [next(generator) for _ in range(fps)]
+    print(output)
+    actual = min(
+        i for sublist in output for i in sublist
+    )  # find min value in the nested list
+
+    assert pytest.approx(actual, abs=actual * 0.05) == intensity_lower

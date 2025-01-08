@@ -1,9 +1,11 @@
 import itertools
 import math
 from abc import ABC, abstractmethod
-from typing import Iterator, List
+from typing import Iterator, Sequence
 
 import numpy
+
+DmxData = Sequence[int]
 
 
 class BaseGenerator(ABC):
@@ -12,14 +14,23 @@ class BaseGenerator(ABC):
         channels: int,
         fps: int,
         frequency: float,
-        intensity: int,
+        intensity_upper: int,
+        intensity_lower: int = 0,
     ):
         super().__init__()
         self.channels = channels
         self.fps = fps
         self.frequency = frequency
-        self.intensity = intensity
-        self.generator = self.create(channels, fps, frequency, intensity)
+        self.intensity_lower = intensity_lower
+        self.intensity_upper = intensity_upper
+
+        self.generator = self.create(
+            channels=self.channels,
+            fps=self.fps,
+            frequency=self.frequency,
+            intensity_lower=self.intensity_lower,
+            intensity_upper=self.intensity_upper,
+        )
 
     def __iter__(self):
         return self
@@ -28,7 +39,7 @@ class BaseGenerator(ABC):
         return self.next()
 
     @abstractmethod
-    def next(self) -> List[int]:
+    def next(self) -> DmxData:
         raise NotImplementedError()
 
     @classmethod
@@ -38,16 +49,17 @@ class BaseGenerator(ABC):
         channels: int,
         fps: int,
         frequency: float,
-        intensity: int,
+        intensity_lower: int,
+        intensity_upper: int,
     ) -> Iterator:
         raise NotImplementedError()
 
 
 class StaticModeDmxDataGenerator(BaseGenerator):
 
-    def next(self) -> List[int]:
-        output_coeff = next(self.generator)
-        return [output_coeff for _ in range(self.channels)]
+    def next(self) -> DmxData:
+        intensity = next(self.generator)
+        return [intensity for _ in range(self.channels)]
 
     @classmethod
     def create(
@@ -55,16 +67,17 @@ class StaticModeDmxDataGenerator(BaseGenerator):
         channels: int,
         fps: int,
         frequency: float,
-        intensity: int,
+        intensity_lower: int,
+        intensity_upper: int,
     ) -> Iterator:
-        return itertools.cycle([intensity])
+        return itertools.cycle([intensity_upper])
 
 
 class RampModeDmxDataGenerator(BaseGenerator):
 
-    def next(self) -> List[int]:
-        output_coeff = next(self.generator)
-        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+    def next(self) -> DmxData:
+        intensity = next(self.generator)
+        return [math.ceil(intensity)] * self.channels
 
     @classmethod
     def create(
@@ -72,22 +85,23 @@ class RampModeDmxDataGenerator(BaseGenerator):
         channels: int,
         fps: int,
         frequency: float,
-        intensity: int,
+        intensity_lower: int,
+        intensity_upper: int,
     ) -> Iterator:
         size = math.ceil((fps / frequency) / 2)
         return itertools.cycle(
             itertools.chain(
-                numpy.linspace(0, 1, size),
-                numpy.linspace(1, 0, size),
+                numpy.linspace(intensity_lower, intensity_upper, size),
+                numpy.linspace(intensity_upper, intensity_lower, size),
             ),
         )
 
 
 class RampUpModeDmxDataGenerator(BaseGenerator):
 
-    def next(self) -> List[int]:
-        output_coeff = next(self.generator)
-        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+    def next(self) -> DmxData:
+        intensity = next(self.generator)
+        return [math.ceil(intensity)] * self.channels
 
     @classmethod
     def create(
@@ -95,21 +109,22 @@ class RampUpModeDmxDataGenerator(BaseGenerator):
         channels: int,
         fps: int,
         frequency: float,
-        intensity: int,
+        intensity_lower: int,
+        intensity_upper: int,
     ) -> Iterator:
         size = math.ceil(fps / frequency)
         return itertools.cycle(
             itertools.chain(
-                numpy.linspace(0, 1, size),
+                numpy.linspace(intensity_lower, intensity_upper, size),
             ),
         )
 
 
 class RampDownModeDmxDataGenerator(BaseGenerator):
 
-    def next(self) -> List[int]:
-        output_coeff = next(self.generator)
-        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+    def next(self) -> DmxData:
+        intensity = next(self.generator)
+        return [math.ceil(intensity)] * self.channels
 
     @classmethod
     def create(
@@ -117,21 +132,25 @@ class RampDownModeDmxDataGenerator(BaseGenerator):
         channels: int,
         fps: int,
         frequency: float,
-        intensity: int,
+        intensity_lower: int,
+        intensity_upper: int,
     ) -> Iterator:
         size = math.ceil(fps / frequency)
         return itertools.cycle(
             itertools.chain(
-                numpy.linspace(1, 0, size),
+                numpy.linspace(intensity_upper, intensity_lower, size),
             ),
         )
 
 
 class ChaseModeDmxDataGenerator(BaseGenerator):
 
-    def next(self) -> List[int]:
+    def next(self) -> DmxData:
         channel = round(next(self.generator))
-        return [self.intensity if channel == i else 0 for i in range(self.channels)]
+        return [
+            self.intensity_upper if channel == i else self.intensity_lower
+            for i in range(self.channels)
+        ]
 
     @classmethod
     def create(
@@ -139,7 +158,8 @@ class ChaseModeDmxDataGenerator(BaseGenerator):
         channels: int,
         fps: int,
         frequency: float,
-        intensity: int,
+        intensity_lower: int,
+        intensity_upper: int,
     ) -> Iterator:
         size = math.ceil(fps / frequency)
         return itertools.cycle(numpy.linspace(0, channels - 1, size))
@@ -147,9 +167,9 @@ class ChaseModeDmxDataGenerator(BaseGenerator):
 
 class SquareModeDmxDataGenerator(BaseGenerator):
 
-    def next(self) -> List[int]:
-        output_coeff = next(self.generator)
-        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+    def next(self) -> DmxData:
+        intensity = next(self.generator)
+        return [math.ceil(intensity)] * self.channels
 
     @classmethod
     def create(
@@ -157,22 +177,29 @@ class SquareModeDmxDataGenerator(BaseGenerator):
         channels: int,
         fps: int,
         frequency: float,
-        intensity: int,
+        intensity_lower: int,
+        intensity_upper: int,
     ) -> Iterator:
         size = math.ceil((fps / frequency) / 2)
         return itertools.cycle(
             itertools.chain(
-                numpy.linspace(0, 0, size),
-                numpy.linspace(1, 1, size),
+                numpy.linspace(intensity_lower, intensity_lower, size),
+                numpy.linspace(intensity_upper, intensity_upper, size),
             ),
         )
 
 
 class SineModeDmxDataGenerator(BaseGenerator):
 
-    def next(self) -> List[int]:
+    def next(self) -> DmxData:
         output_coeff = next(self.generator)
-        return [math.ceil(output_coeff * self.intensity) for _ in range(self.channels)]
+        return [
+            math.ceil(
+                output_coeff * (self.intensity_upper - self.intensity_lower)
+                + self.intensity_lower
+            )
+            for _ in range(self.channels)
+        ]
 
     @classmethod
     def create(
@@ -180,7 +207,8 @@ class SineModeDmxDataGenerator(BaseGenerator):
         channels: int,
         fps: int,
         frequency: float,
-        intensity: int,
+        intensity_lower: int,
+        intensity_upper: int,
     ) -> Iterator:
         size = math.ceil(fps / frequency)
 

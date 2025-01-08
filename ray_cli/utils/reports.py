@@ -60,7 +60,7 @@ def generate_settings_report(
         ),
         ity=row_template.format(
             desc="intensity",
-            value=str(args.intensity),
+            value=f"{str(args.intensity_min)} - {str(args.intensity)}",
             info=f"(out of {max_intensity})",
             padding=padding,
         ),
