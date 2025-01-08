@@ -58,6 +58,10 @@ class App:
         self.progress_bar = ProgressBar((fps * duration) if duration else None)
 
     def purge_output(self):
+        with self.dispatcher:
+            self._purge_output()
+
+    def _purge_output(self):
         self.dispatcher.send([0 for _ in range(self.channels)])
 
     def run(
@@ -65,22 +69,18 @@ class App:
         feedback: Optional[Feedback] = None,
         dry=False,
     ):
-        self.dispatcher.start()
+        with self.dispatcher:
+            t_start = time.time()
+            for i in self.throttle.loop(self.duration):
+                payload = next(self.generator)
 
-        t_start = time.time()
-        for i in self.throttle.loop(self.duration):
-            payload = next(self.generator)
+                if not dry:
+                    self.dispatcher.send(payload)
 
-            if not dry:
-                self.dispatcher.send(payload)
+                if feedback == Feedback.TABULAR:
+                    self.table_logger.report(i + 1, payload)
 
-            if feedback == Feedback.TABULAR:
-                self.table_logger.report(i + 1, payload)
+                elif feedback == Feedback.PROGRESS_BAR:
+                    self.progress_bar.report(i + 1, time.time() - t_start)
 
-            elif feedback == Feedback.PROGRESS_BAR:
-                self.progress_bar.report(i + 1, time.time() - t_start)
-
-        if not dry:
-            self.purge_output()
-
-        self.dispatcher.stop()
+            self._purge_output()

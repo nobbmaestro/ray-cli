@@ -68,6 +68,7 @@ display options:
 
 operational options:
   --dry                                      simulate outputs without broadcast
+  --purge                                    send zero-data on all channels and exit
 
 query options:
   -h, --help                                 print help and exit

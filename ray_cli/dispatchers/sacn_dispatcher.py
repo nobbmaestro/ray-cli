@@ -22,12 +22,16 @@ class SACNDispatcher:
         self.src_ip_address = src_ip_address
         self.dst_ip_address = dst_ip_address
 
+        self._started = False
         self.sender = sacn.sACNsender(
             bind_address=str(self.src_ip_address),
             fps=self.fps,
         )
 
     def start(self):
+        if self._started:
+            return
+
         self.sender.start()
         for universe in self.universes:
             self.sender.activate_output(universe)
@@ -39,8 +43,15 @@ class SACNDispatcher:
 
     def stop(self):
         self.sender.stop()
+        self._started = False
 
     def send(self, payload):
         for universe in self.universes:
             self.sender[universe].dmx_data = payload
         self.sender.flush()
+
+    def __enter__(self):
+        self.start()
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.stop()

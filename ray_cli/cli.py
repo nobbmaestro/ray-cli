@@ -159,7 +159,12 @@ def parse_args(args=None):
     operational_group.add_argument(
         "--dry",
         action="store_true",
-        help="simulate outputs without broadcast",  # noqa: E501 # pylint: disable=line-too-long
+        help="simulate outputs without broadcast",
+    )
+    operational_group.add_argument(
+        "--purge",
+        action="store_true",
+        help="send zero-data on all channels and exit",
     )
 
     query_group = argparser.add_argument_group("query options")
@@ -219,7 +224,7 @@ def main(args=None):
             dst_ip_address=args.dst,
         )
 
-        if not args.quiet:
+        if not args.quiet and not args.purge:
             print_report(args)
 
         app = App(
@@ -230,10 +235,13 @@ def main(args=None):
             duration=args.duration,
         )
 
-        app.run(feedback, args.dry)
+        if args.purge:
+            app.purge_output()
+        else:
+            app.run(feedback, args.dry)
 
-        if not args.quiet:
-            print("\nDone!")
+            if not args.quiet:
+                print("\nDone!")
 
     except KeyboardInterrupt:
         print("\nCancelling...")
