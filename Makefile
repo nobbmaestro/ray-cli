@@ -1,20 +1,33 @@
-.PHONY: all clean
+.PHONY: all clean build install test publish uninstall dist-clean
+
+PACKAGE_NAME := ray-cli
+DIST_DIR := dist
+WHEEL := $(DIST_DIR)/*.whl
 
 all: install
 
-build:
-	@echo "Building..."
+build: dist-clean
+	@echo "Building package..."
 	poetry build
 
 install: build
-	@echo "Installing..."
-	pipx install --force dist/*.whl
+	@echo "Installing $(PACKAGE_NAME) via pipx..."
+	pipx install --force $(WHEEL)
 
-publish: build
-	@echo "Publishing..."
+test:
+	@echo "Running tests with tox..."
+	tox
+
+publish: test build
+	@echo "Publishing $(PACKAGE_NAME) to PyPI..."
 	poetry publish
 
-clean:
-	@echo "Cleaning up..."
-	pipx uninstall ray-cli
-	rm -r dist
+clean: uninstall dist-clean
+
+uninstall:
+	@echo "Uninstalling $(PACKAGE_NAME) via pipx..."
+	-pipx uninstall $(PACKAGE_NAME)
+
+dist-clean:
+	@echo "Cleaning distribution files..."
+	-rm -rf $(DIST_DIR)
