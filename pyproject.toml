@@ -1,11 +1,14 @@
+[project]
+dynamic = ["version"]
+
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry]
 name = "ray-cli"
-version = "0.3.0"
-description = "Command line utility for generating and broadcast DMX over sACN"
+version = "0.0.0"
+description = "Command-line utility for generating and broadcasting DMX over sACN"
 authors = ["Norbert Batiuk <norbert@batiuk.se>"]
 readme = "README.md"
 license = "MIT"
@@ -17,6 +20,11 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+
+[tool.poetry-dynamic-versioning]
+enable = true
+bump = true
+dirty = true
 
 [tool.poetry.scripts]
 ray-cli = "ray_cli.cli:main"

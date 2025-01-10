@@ -1,13 +1,19 @@
 # Ray CLI
 
-Command line utility for generating and broadcast DMX over sACN.
-
 [![GitHub Release](https://img.shields.io/github/v/release/nobbmaestro/ray-cli)](github-release)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/ray-cli/development)](github-last-commit)
 [![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.3.0/development)](githut-commits-since)
 ![Tests](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
+![License](https://img.shields.io/github/license/nobbmaestro/ray-cli)
+
+Ray CLI is a command-line utility designed for generating and broadcasting DMX data over sACN.
 
 ## Installation
+
+### Prerequisites
+
+- Python 3.7+ is required.
+- **_Optional_** For Pipx, ensure it is installed by running `pip install pipx`
 
 ### Pipx (Recommended)
 
@@ -31,22 +37,37 @@ make install
 
 ## Usage
 
-```console
+### Basic Example
+
+To broadcast a ramp DMX signal to a specific IP address:
+
+```sh
+ray-cli 192.168.86.198 \
+    --dst 192.168.86.67 \
+    --mode chase \
+    --universes 1 2 \
+    --channels 24 \
+    --fps 50 \
+    --duration 60
+```
+
+### Complete List of Command-Line Options
+
+```sh
 usage: ray-cli [-m {chase,ramp,ramp-down,ramp-up,sine,square,static}]
                [-d DURATION] [-u UNIVERSES [UNIVERSES ...]] [-c CHANNELS]
-               [-i INTENSITY] [-f FREQUENCY] [--fps FPS] [--dst DST] [-v] [-q]
-               [--dry] [-h] [-V]
-               IP_ADDRESS
+               [-i INTENSITY] [-I INTENSITY_MIN] [-f FREQUENCY] [--fps FPS]
+               [--dst DST] [-v] [-q] [--dry] [--purge] [-h] [-V]
+               [IP_ADDRESS]
 
 Command line utility for generating and broadcast DMX over sACN
 
 positional arguments:
   IP_ADDRESS                                 IP address of the DMX source
 
-options:
+optional arguments:
   -m, --mode {chase,ramp,ramp-down,ramp-up,sine,square,static}
-                                             DMX signal shape mode (default:
-                                             ramp)
+                                             DMX signal shape mode (default: ramp)
   -d, --duration DURATION                    broadcast duration in seconds
                                              (default: INDEFINITE)
   -u, --universes UNIVERSES [UNIVERSES ...]  sACN universe(s) to send to
@@ -55,6 +76,9 @@ options:
                                              (range: 1-512, default: 24)
   -i, --intensity INTENSITY                  DMX channels output intensity
                                              (range: 1-255, default: 10)
+  -I, --intensity-min INTENSITY_MIN          DMX channels minimum output
+                                             intensity (range: 0-255, default:
+                                             0)
   -f, --frequency FREQUENCY                  frequency of the generated signal
                                              (default: 1.0)
   --fps FPS                                  frames per second per universe
@@ -68,9 +92,9 @@ display options:
 
 operational options:
   --dry                                      simulate outputs without broadcast
+  --purge                                    send zero-data on all channels and exit
 
 query options:
   -h, --help                                 print help and exit
-  -V, --version                              show program's version number and
-                                             exit
+  -V, --version                              show program's version number and exit
 ```

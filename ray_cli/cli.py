@@ -1,21 +1,22 @@
 import argparse
 import importlib.metadata
 import ipaddress
+import socket
 import sys
 from typing import Callable, Dict, Type
 
 from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import (
-    ChaseModeOutputGenerator,
+    ChaseModeDmxDataGenerator,
     Mode,
-    RampDownModeOutputGenerator,
-    RampModeOutputGenerator,
-    RampUpModeOutputGenerator,
-    SineModeOutputGenerator,
-    SquareModeOutputGenerator,
-    StaticModeOutputGenerator,
+    RampDownModeDmxDataGenerator,
+    RampModeDmxDataGenerator,
+    RampUpModeDmxDataGenerator,
+    SineModeDmxDataGenerator,
+    SquareModeDmxDataGenerator,
+    StaticModeDmxDataGenerator,
 )
-from ray_cli.modes.types import Generator
+from ray_cli.modes.types import DmxDataGenerator
 from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
@@ -26,6 +27,7 @@ PACKAGE_SUMMARY = importlib.metadata.metadata("ray-cli")["Summary"]
 
 MAX_CHANNELS = 512
 MAX_FPS = 10**4
+MIN_INTENSITY = 0
 MAX_INTENSITY = 255
 MAX_UNIVERSE = 8
 
@@ -81,8 +83,10 @@ def parse_args(args=None):
 
     argparser.add_argument(
         "IP_ADDRESS",
+        nargs="?",
         type=ipaddress.IPv4Address,
-        help="IP address of the DMX source",
+        default=socket.gethostbyname(socket.gethostname()),
+        help="IP address of the DMX source (default: %(default)s)",
     )
     argparser.add_argument(
         "-m",
@@ -122,6 +126,13 @@ def parse_args(args=None):
         help=f"DMX channels output intensity (range: 1-{MAX_INTENSITY}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
     )
     argparser.add_argument(
+        "-I",
+        "--intensity-min",
+        default=0,
+        type=range_limited_int_type(lower=MIN_INTENSITY, upper=MAX_INTENSITY),
+        help=f"DMX channels minimum output intensity (range: {MIN_INTENSITY}-{MAX_INTENSITY}, default: 0)",  # noqa: E501 # pylint: disable=line-too-long
+    )
+    argparser.add_argument(
         "-f",
         "--frequency",
         default=1.0,
@@ -159,7 +170,12 @@ def parse_args(args=None):
     operational_group.add_argument(
         "--dry",
         action="store_true",
-        help="simulate outputs without broadcast",  # noqa: E501 # pylint: disable=line-too-long
+        help="simulate outputs without broadcast",
+    )
+    operational_group.add_argument(
+        "--purge",
+        action="store_true",
+        help="send zero-data on all channels and exit",
     )
 
     query_group = argparser.add_argument_group("query options")
@@ -184,20 +200,20 @@ def main(args=None):
         args = parse_args(args)
 
         if args.quiet:
-            feedback = Feedback.NONE
+            feedback = None
         elif args.verbose or args.dry:
             feedback = Feedback.TABULAR
         else:
             feedback = Feedback.PROGRESS_BAR
 
-        mode_to_generator: Dict[Mode, Type[Generator]] = {
-            Mode.CHASE: ChaseModeOutputGenerator,
-            Mode.RAMP: RampModeOutputGenerator,
-            Mode.RAMP_DOWN: RampDownModeOutputGenerator,
-            Mode.RAMP_UP: RampUpModeOutputGenerator,
-            Mode.SINE: SineModeOutputGenerator,
-            Mode.SQUARE: SquareModeOutputGenerator,
-            Mode.STATIC: StaticModeOutputGenerator,
+        mode_to_generator: Dict[Mode, Type[DmxDataGenerator]] = {
+            Mode.CHASE: ChaseModeDmxDataGenerator,
+            Mode.RAMP: RampModeDmxDataGenerator,
+            Mode.RAMP_DOWN: RampDownModeDmxDataGenerator,
+            Mode.RAMP_UP: RampUpModeDmxDataGenerator,
+            Mode.SINE: SineModeDmxDataGenerator,
+            Mode.SQUARE: SquareModeDmxDataGenerator,
+            Mode.STATIC: StaticModeDmxDataGenerator,
         }
 
         generator_class = mode_to_generator.get(args.mode)
@@ -208,7 +224,8 @@ def main(args=None):
             channels=args.channels,
             fps=args.fps,
             frequency=args.frequency,
-            intensity=args.intensity,
+            intensity_upper=args.intensity,
+            intensity_lower=args.intensity_min,
         )
 
         dispatcher = SACNDispatcher(
@@ -219,7 +236,7 @@ def main(args=None):
             dst_ip_address=args.dst,
         )
 
-        if not args.quiet:
+        if not args.quiet and not args.purge:
             print_report(args)
 
         app = App(
@@ -230,10 +247,13 @@ def main(args=None):
             duration=args.duration,
         )
 
-        app.run(feedback, args.dry)
+        if args.purge:
+            app.purge_output()
+        else:
+            app.run(feedback, args.dry)
 
-        if not args.quiet:
-            print("\nDone!")
+            if not args.quiet:
+                print("\nDone!")
 
     except KeyboardInterrupt:
         print("\nCancelling...")
