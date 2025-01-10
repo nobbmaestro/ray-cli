@@ -26,8 +26,8 @@ clean: uninstall dist-clean
 
 uninstall:
 	@echo "Uninstalling $(PACKAGE_NAME) via pipx..."
-	-pipx uninstall $(PACKAGE_NAME)
+	pipx uninstall $(PACKAGE_NAME)
 
 dist-clean:
 	@echo "Cleaning distribution files..."
-	-rm -rf $(DIST_DIR)
+	rm -rf $(DIST_DIR)
