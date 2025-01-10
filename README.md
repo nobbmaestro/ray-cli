@@ -2,7 +2,7 @@
 
 [![GitHub Release](https://img.shields.io/github/v/release/nobbmaestro/ray-cli)](github-release)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/ray-cli/development)](github-last-commit)
-[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.3.0/development)](githut-commits-since)
+[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.4.2/development)](githut-commits-since)
 ![Tests](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
 ![License](https://img.shields.io/github/license/nobbmaestro/ray-cli)
 
