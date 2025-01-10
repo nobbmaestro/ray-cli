@@ -10,7 +10,11 @@ install: build
 	@echo "Installing..."
 	pipx install --force dist/*.whl
 
-publish: build
+test:
+	@echo "Running tests with tox..."
+	tox
+
+publish: test build
 	@echo "Publishing..."
 	poetry publish
 
