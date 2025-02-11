@@ -29,7 +29,7 @@ MAX_CHANNELS = 512
 MAX_FPS = 10**4
 MIN_INTENSITY = 0
 MAX_INTENSITY = 255
-MAX_UNIVERSE = 8
+MAX_UNIVERSE = 63999
 
 
 def print_report(args):
@@ -109,7 +109,7 @@ def parse_args(args=None):
         default=(1,),
         nargs="+",
         type=range_limited_int_type(upper=MAX_UNIVERSE),
-        help="sACN universe(s) to send to (default: 1)",
+        help=f"sACN universe(s) to send to (range: 1-{MAX_UNIVERSE}, default: 1)",
     )
     argparser.add_argument(
         "-c",
