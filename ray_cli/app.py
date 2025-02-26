@@ -83,4 +83,5 @@ class App:
                 elif feedback == Feedback.PROGRESS_BAR:
                     self.progress_bar.report(i + 1, time.time() - t_start)
 
-            self._purge_output()
+            if not dry:
+                self._purge_output()
