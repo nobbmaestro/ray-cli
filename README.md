@@ -63,8 +63,7 @@ usage: ray-cli [-m {chase,ramp,ramp-down,ramp-up,sine,square,static}] [-d DURATI
 Command-line utility for generating and broadcasting DMX over sACN
 
 positional arguments:
-  IP_ADDRESS                                 IP address of the DMX source (default:
-                                             192.168.86.204)
+  IP_ADDRESS                                 IP address of the DMX source
 
 optional arguments:
   -m, --mode {chase,ramp,ramp-down,ramp-up,sine,square,static}
