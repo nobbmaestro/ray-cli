@@ -39,8 +39,7 @@ class BaseGenerator(ABC):
         return self.next()
 
     @abstractmethod
-    def next(self) -> DmxData:
-        raise NotImplementedError()
+    def next(self) -> DmxData: ...
 
     @classmethod
     @abstractmethod
@@ -51,8 +50,7 @@ class BaseGenerator(ABC):
         frequency: float,
         intensity_lower: int,
         intensity_upper: int,
-    ) -> Iterator:
-        raise NotImplementedError()
+    ) -> Iterator: ...
 
 
 class StaticModeDmxDataGenerator(BaseGenerator):
