@@ -2,7 +2,7 @@
 
 [![GitHub Release](https://img.shields.io/github/v/release/nobbmaestro/ray-cli)](github-release)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/ray-cli/development)](github-last-commit)
-[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.4.3/development)](githut-commits-since)
+[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.4.4/development)](githut-commits-since)
 ![Tests](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
 ![License](https://img.shields.io/github/license/nobbmaestro/ray-cli)
 
@@ -13,6 +13,7 @@ Ray CLI is a command-line utility designed for generating and broadcasting DMX d
 ### Prerequisites
 
 - Python 3.7+ is required.
+- Poetry is required.
 - **_Optional_** For Pipx, ensure it is installed by running `pip install pipx`
 
 ### Pipx (Recommended)
@@ -63,8 +64,7 @@ usage: ray-cli [-m {chase,ramp,ramp-down,ramp-up,sine,square,static}] [-d DURATI
 Command-line utility for generating and broadcasting DMX over sACN
 
 positional arguments:
-  IP_ADDRESS                                 IP address of the DMX source (default:
-                                             192.168.86.204)
+  IP_ADDRESS                                 IP address of the DMX source
 
 optional arguments:
   -m, --mode {chase,ramp,ramp-down,ramp-up,sine,square,static}
