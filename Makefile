@@ -2,6 +2,7 @@
 
 PACKAGE_NAME := ray-cli
 DIST_DIR := dist
+TEST_DIR := .pytest_cache .pytype .tox
 WHEEL := $(DIST_DIR)/*.whl
 
 all: install
@@ -22,7 +23,7 @@ publish: test build
 	@echo "Publishing $(PACKAGE_NAME) to PyPI..."
 	poetry publish
 
-clean: uninstall dist-clean
+clean: dist-clean test-clean uninstall
 
 uninstall:
 	@echo "Uninstalling $(PACKAGE_NAME) via pipx..."
@@ -31,3 +32,7 @@ uninstall:
 dist-clean:
 	@echo "Cleaning distribution files..."
 	rm -rf $(DIST_DIR)
+
+test-clean:
+	@echo "Cleaning test files..."
+	rm -rf $(TEST_DIR)
