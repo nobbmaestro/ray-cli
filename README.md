@@ -12,9 +12,13 @@ Ray CLI is a command-line utility designed for generating and broadcasting DMX d
 
 ### Prerequisites
 
-- Python 3.7+ is required.
-- Poetry is required.
-- **_Optional_** For Pipx, ensure it is installed by running `pip install pipx`
+- Python 3.7+
+
+#### Development
+
+- Python 3.7+
+- Poetry
+- Pipx
 
 ### Pipx (Recommended)
 
@@ -51,6 +55,18 @@ ray-cli 192.168.86.198 \
     --fps 50 \
     --duration 60
 ```
+
+### Available Modes
+
+| Mode        | Description                           |
+| ----------- | ------------------------------------- |
+| `chase`     | Light chases across the channel range |
+| `ramp`      | Linear ramp up **_and_** down         |
+| `ramp-up`   | Gradually increases intensity         |
+| `ramp-down` | Gradually decreases intensity         |
+| `sine`      | Sine wave modulation                  |
+| `square`    | Binary high/low intensity             |
+| `static`    | Static intensity output               |
 
 ### Complete List of Command-Line Options
 
