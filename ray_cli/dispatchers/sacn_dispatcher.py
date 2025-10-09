@@ -1,5 +1,6 @@
 import ipaddress
 import logging
+import random
 from typing import Optional, Sequence
 
 import sacn
@@ -31,6 +32,7 @@ class SACNDispatcher:
             bind_address=str(self.src_ip_address),
             fps=self.fps,
             source_name=self.source_name,
+            cid=(random.randint(0, 99999),),
         )
 
     def start(self):
