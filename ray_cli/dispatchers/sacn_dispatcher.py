@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 class SACNDispatcher:
     def __init__(
         self,
+        source_name: str,
         channels: int,
         fps: int,
         universes: Sequence[int],
@@ -23,11 +24,13 @@ class SACNDispatcher:
         self.universes = universes
         self.src_ip_address = src_ip_address
         self.dst_ip_address = dst_ip_address
+        self.source_name = source_name
 
         self._started = False
         self.sender = sacn.sACNsender(
             bind_address=str(self.src_ip_address),
             fps=self.fps,
+            source_name=self.source_name,
         )
 
     def start(self):

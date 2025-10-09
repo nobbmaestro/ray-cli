@@ -229,6 +229,7 @@ def main(args=None):
         )
 
         dispatcher = SACNDispatcher(
+            source_name=f"{PACKAGE_NAME} {__version__}",
             channels=args.channels,
             fps=args.fps,
             universes=args.universes,
