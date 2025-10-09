@@ -29,6 +29,7 @@ MAX_CHANNELS = 512
 MAX_FPS = 10**4
 MIN_INTENSITY = 0
 MAX_INTENSITY = 255
+MAX_PRIORITY = 255
 MAX_UNIVERSE = 63999
 
 
@@ -133,6 +134,13 @@ def parse_args(args=None):
         help=f"DMX channels minimum output intensity (range: {MIN_INTENSITY}-{MAX_INTENSITY}, default: 0)",  # noqa: E501 # pylint: disable=line-too-long
     )
     argparser.add_argument(
+        "-p",
+        "--priority",
+        default=100,
+        type=range_limited_int_type(upper=MAX_PRIORITY),
+        help=f"DMX source priority (range: 1-{MAX_PRIORITY}, default: %(default)s)",
+    )
+    argparser.add_argument(
         "-f",
         "--frequency",
         default=1.0,
@@ -235,6 +243,7 @@ def main(args=None):
             universes=args.universes,
             src_ip_address=args.IP_ADDRESS,
             dst_ip_address=args.dst,
+            priority=args.priority,
         )
 
         if not args.quiet and not args.purge:

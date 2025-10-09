@@ -19,12 +19,14 @@ class SACNDispatcher:
         universes: Sequence[int],
         src_ip_address: ipaddress.IPv4Address,
         dst_ip_address: Optional[ipaddress.IPv4Address] = None,
+        priority: int = 100,
     ):
         self.fps = fps
         self.channels = channels
         self.universes = universes
         self.src_ip_address = src_ip_address
         self.dst_ip_address = dst_ip_address
+        self.priority = priority
         self.source_name = source_name
 
         self._started = False
@@ -42,6 +44,7 @@ class SACNDispatcher:
         self.sender.start()
         for universe in self.universes:
             self.sender.activate_output(universe)
+            self.sender[universe].priority = self.priority
             if self.dst_ip_address:
                 self.sender[universe].destination = str(self.dst_ip_address)
             else:
