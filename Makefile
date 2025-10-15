@@ -9,11 +9,11 @@ all: install
 
 build: dist-clean
 	@echo "Building package..."
-	poetry build
+	uv build
 
 install: build
-	@echo "Installing $(PACKAGE_NAME) via pipx..."
-	pipx install --force $(WHEEL)
+	@echo "Installing $(PACKAGE_NAME) via uv..."
+	uv tool install --force $(WHEEL)
 
 test:
 	@echo "Running tests with tox..."
@@ -21,13 +21,13 @@ test:
 
 publish: test build
 	@echo "Publishing $(PACKAGE_NAME) to PyPI..."
-	poetry publish
+	uv publish
 
 clean: dist-clean test-clean uninstall
 
 uninstall:
-	@echo "Uninstalling $(PACKAGE_NAME) via pipx..."
-	pipx uninstall $(PACKAGE_NAME)
+	@echo "Uninstalling $(PACKAGE_NAME) via uv..."
+	uv tool uninstall $(PACKAGE_NAME)
 
 dist-clean:
 	@echo "Cleaning distribution files..."
