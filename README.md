@@ -1,38 +1,36 @@
 # Ray CLI
 
-[![GitHub Release](https://img.shields.io/github/v/release/nobbmaestro/ray-cli)](github-release)
+![](https://img.shields.io/pypi/v/ray-cli.svg)
+![](https://img.shields.io/pypi/l/ray-cli.svg)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/ray-cli/development)](github-last-commit)
 [![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.6.0/development)](githut-commits-since)
-![Tests](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
-![License](https://img.shields.io/github/license/nobbmaestro/ray-cli)
+![](https://img.shields.io/pypi/pyversions/ray-cli.svg)
+![CI](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
 
-Ray CLI is a command-line utility designed for generating and broadcasting DMX data over sACN.
+Ray CLI is a command-line engineering utility for generating and broadcasting DMX data over sACN.
 
 ## Installation
 
-### Prerequisites
-
-- Python 3.7+
-
-#### Development
-
-- Python 3.7+
-- Poetry
-- Pipx
-
-### Pipx (Recommended)
+Install `ray-cli` from [PyPi](https://pypi.org/project/ray-cli/):
 
 ```sh
-pipx install ray-cli
-```
-
-### Pip
-
-```sh
+# With pip.
 pip install ray-cli
 ```
 
-### GitHub
+```sh
+# With pipx.
+pipx install ray-cli
+```
+
+```sh
+# Or uv.
+uv tool install ray-cli
+```
+
+Or, directly from GitHub:
+
+> **Note**: The GitHub installation requires [uv](https://github.com/astral-sh/uv) to be installed!
 
 ```sh
 git clone git@github.com:nobbmaestro/ray-cli.git
