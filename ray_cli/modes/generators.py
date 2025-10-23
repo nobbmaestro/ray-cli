@@ -3,9 +3,19 @@ import math
 from abc import ABC, abstractmethod
 from typing import Iterator, Sequence
 
-import numpy
-
 DmxData = Sequence[int]
+
+
+def linspace(start: float, stop: float, num: int) -> Iterator[float]:
+    if num < 1:
+        raise ValueError("num must be >= 1")
+    if num == 1:
+        yield float(start)
+        return
+
+    step = (stop - start) / (num - 1)
+    for i in range(num):
+        yield start + step * i
 
 
 class BaseGenerator(ABC):
@@ -89,8 +99,8 @@ class RampModeDmxDataGenerator(BaseGenerator):
         size = math.ceil((fps / frequency) / 2)
         return itertools.cycle(
             itertools.chain(
-                numpy.linspace(intensity_lower, intensity_upper, size),
-                numpy.linspace(intensity_upper, intensity_lower, size),
+                linspace(intensity_lower, intensity_upper, size),
+                linspace(intensity_upper, intensity_lower, size),
             ),
         )
 
@@ -113,7 +123,7 @@ class RampUpModeDmxDataGenerator(BaseGenerator):
         size = math.ceil(fps / frequency)
         return itertools.cycle(
             itertools.chain(
-                numpy.linspace(intensity_lower, intensity_upper, size),
+                linspace(intensity_lower, intensity_upper, size),
             ),
         )
 
@@ -136,7 +146,7 @@ class RampDownModeDmxDataGenerator(BaseGenerator):
         size = math.ceil(fps / frequency)
         return itertools.cycle(
             itertools.chain(
-                numpy.linspace(intensity_upper, intensity_lower, size),
+                linspace(intensity_upper, intensity_lower, size),
             ),
         )
 
@@ -160,7 +170,7 @@ class ChaseModeDmxDataGenerator(BaseGenerator):
         intensity_upper: int,
     ) -> Iterator:
         size = math.ceil(fps / frequency)
-        return itertools.cycle(numpy.linspace(0, channels - 1, size))
+        return itertools.cycle(linspace(0, channels - 1, size))
 
 
 class SquareModeDmxDataGenerator(BaseGenerator):
@@ -181,8 +191,8 @@ class SquareModeDmxDataGenerator(BaseGenerator):
         size = math.ceil((fps / frequency) / 2)
         return itertools.cycle(
             itertools.chain(
-                numpy.linspace(intensity_lower, intensity_lower, size),
-                numpy.linspace(intensity_upper, intensity_upper, size),
+                linspace(intensity_lower, intensity_lower, size),
+                linspace(intensity_upper, intensity_upper, size),
             ),
         )
 
@@ -213,5 +223,5 @@ class SineModeDmxDataGenerator(BaseGenerator):
         if size <= 2:
             return itertools.cycle([0, 1])
 
-        x_values = numpy.linspace(0, numpy.pi, size)
-        return itertools.cycle(itertools.chain(numpy.sin(x_values)))
+        x_values = linspace(0, math.pi, size)
+        return itertools.cycle(itertools.chain(map(math.sin, x_values)))
