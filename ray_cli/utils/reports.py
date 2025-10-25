@@ -28,7 +28,11 @@ def generate_settings_report(
     padding_right=12,
 ) -> str:
     def row(desc: str, value: str, info: str = "") -> str:
-        return f"{desc:>{padding_left}}: {value:.<{width-padding_left-padding_right}}{info:.>{padding_right}}"  # noqa: E501 # pylint: disable=line-too-long
+        return (
+            f"{desc:>{padding_left}}: "
+            f"{value:.<{width - padding_left - padding_right}}"
+            f"{info:.>{padding_right}}"
+        )
 
     sections = [
         row(

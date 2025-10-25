@@ -1,5 +1,6 @@
 import ipaddress
 import logging
+import random
 from typing import Optional, Sequence
 
 import sacn
@@ -12,22 +13,28 @@ logger = logging.getLogger(__name__)
 class SACNDispatcher:
     def __init__(
         self,
+        source_name: str,
         channels: int,
         fps: int,
         universes: Sequence[int],
         src_ip_address: ipaddress.IPv4Address,
         dst_ip_address: Optional[ipaddress.IPv4Address] = None,
+        priority: int = 100,
     ):
         self.fps = fps
         self.channels = channels
         self.universes = universes
         self.src_ip_address = src_ip_address
         self.dst_ip_address = dst_ip_address
+        self.priority = priority
+        self.source_name = source_name
 
         self._started = False
         self.sender = sacn.sACNsender(
             bind_address=str(self.src_ip_address),
             fps=self.fps,
+            source_name=self.source_name,
+            cid=(random.randint(0, 99999),),
         )
 
     def start(self):
@@ -37,6 +44,7 @@ class SACNDispatcher:
         self.sender.start()
         for universe in self.universes:
             self.sender.activate_output(universe)
+            self.sender[universe].priority = self.priority
             if self.dst_ip_address:
                 self.sender[universe].destination = str(self.dst_ip_address)
             else:
