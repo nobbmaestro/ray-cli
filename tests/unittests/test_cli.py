@@ -250,9 +250,9 @@ def test_parse_args_fps_invalid(arg, value):
 
 
 @pytest.mark.parametrize("value, expected", [
-    ("1", 1),
+    ("0", 0),
     ("100", 100),
-    ("255", 255),
+    ("200", 200),
 ])  # fmt: skip
 @pytest.mark.parametrize("arg", [
     "-p",
@@ -264,8 +264,7 @@ def test_parse_args_priority_valid(arg, value, expected):
 
 
 @pytest.mark.parametrize("value", [
-    "256",
-    "0",
+    "201",
     "1.0",
     "-1",
     "-1.0",
