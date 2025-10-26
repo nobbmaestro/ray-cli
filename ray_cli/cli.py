@@ -29,7 +29,8 @@ MAX_CHANNELS = 512
 MAX_FPS = 10**4
 MIN_INTENSITY = 0
 MAX_INTENSITY = 255
-MAX_PRIORITY = 255
+MIN_PRIORITY = 0
+MAX_PRIORITY = 200
 MAX_UNIVERSE = 63999
 
 
@@ -137,8 +138,8 @@ def parse_args(args=None):
         "-p",
         "--priority",
         default=100,
-        type=range_limited_int_type(upper=MAX_PRIORITY),
-        help=f"DMX source priority (range: 1-{MAX_PRIORITY}, default: %(default)s)",
+        type=range_limited_int_type(lower=MIN_PRIORITY, upper=MAX_PRIORITY),
+        help=f"DMX source priority (range: {MIN_PRIORITY}-{MAX_PRIORITY}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
     )
     argparser.add_argument(
         "-f",

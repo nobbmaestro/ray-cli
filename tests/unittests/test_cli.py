@@ -250,6 +250,36 @@ def test_parse_args_fps_invalid(arg, value):
 
 
 @pytest.mark.parametrize("value, expected", [
+    ("0", 0),
+    ("100", 100),
+    ("200", 200),
+])  # fmt: skip
+@pytest.mark.parametrize("arg", [
+    "-p",
+    "--priority",
+])  # fmt: skip
+def test_parse_args_priority_valid(arg, value, expected):
+    parsed = helper_parse_args(arg, value)
+    assert parsed.priority == expected
+
+
+@pytest.mark.parametrize("value", [
+    "201",
+    "1.0",
+    "-1",
+    "-1.0",
+    "not a numeric value",
+],)  # fmt: skip
+@pytest.mark.parametrize("arg", [
+    "-p",
+    "--priority",
+])  # fmt: skip
+def test_parse_args_priority_invalid(arg, value):
+    with pytest.raises(SystemExit):
+        helper_parse_args(arg, value)
+
+
+@pytest.mark.parametrize("value, expected", [
     ("0.000001", 0.000001),
     ("0.1", 0.1),
     ("1", 1),
