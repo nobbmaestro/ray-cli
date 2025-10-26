@@ -5,8 +5,8 @@ import socket
 import sys
 from typing import Callable
 
-from ray_cli.dispatchers import SACNDispatcher
 from ray_cli.modes import Mode, build_generator
+from ray_cli.transports.sacn.sender import SACNSender
 from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
@@ -215,14 +215,12 @@ def main(args=None):
             intensity_lower=args.intensity_min,
         )
 
-        dispatcher = SACNDispatcher(
+        sender = SACNSender(
             source_name=f"{PACKAGE_NAME} {__version__}",
-            channels=args.channels,
-            fps=args.fps,
             universes=args.universes,
-            src_ip_address=args.IP_ADDRESS,
-            dst_ip_address=args.dst,
             priority=args.priority,
+            src=args.IP_ADDRESS,
+            dst=args.dst,
         )
 
         if not args.quiet and not args.purge:
@@ -230,7 +228,7 @@ def main(args=None):
 
         app = App(
             generator=generator,
-            dispatcher=dispatcher,
+            sender=sender,
             channels=args.channels,
             fps=args.fps,
             duration=args.duration,
