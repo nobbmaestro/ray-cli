@@ -1,7 +1,6 @@
 import argparse
 import importlib.metadata
 import ipaddress
-import socket
 import sys
 from typing import Callable
 
@@ -78,7 +77,7 @@ def parse_args(args=None):
         "IP_ADDRESS",
         nargs="?",
         type=ipaddress.IPv4Address,
-        default=socket.gethostbyname(socket.gethostname()),
+        default=ipaddress.IPv4Address("0.0.0.0"),
         help="IP address of the DMX source (default: %(default)s)",
     )
     argparser.add_argument(
