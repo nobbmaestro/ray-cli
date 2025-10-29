@@ -3,20 +3,10 @@ import importlib.metadata
 import ipaddress
 import socket
 import sys
-from typing import Callable, Dict, Type
+from typing import Callable
 
 from ray_cli.dispatchers import SACNDispatcher
-from ray_cli.modes import (
-    ChaseModeDmxDataGenerator,
-    Mode,
-    RampDownModeDmxDataGenerator,
-    RampModeDmxDataGenerator,
-    RampUpModeDmxDataGenerator,
-    SineModeDmxDataGenerator,
-    SquareModeDmxDataGenerator,
-    StaticModeDmxDataGenerator,
-)
-from ray_cli.modes.types import DmxDataGenerator
+from ray_cli.modes import Mode, build_generator
 from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
@@ -216,21 +206,8 @@ def main(args=None):
         else:
             feedback = Feedback.PROGRESS_BAR
 
-        mode_to_generator: Dict[Mode, Type[DmxDataGenerator]] = {
-            Mode.CHASE: ChaseModeDmxDataGenerator,
-            Mode.RAMP: RampModeDmxDataGenerator,
-            Mode.RAMP_DOWN: RampDownModeDmxDataGenerator,
-            Mode.RAMP_UP: RampUpModeDmxDataGenerator,
-            Mode.SINE: SineModeDmxDataGenerator,
-            Mode.SQUARE: SquareModeDmxDataGenerator,
-            Mode.STATIC: StaticModeDmxDataGenerator,
-        }
-
-        generator_class = mode_to_generator.get(args.mode)
-        if generator_class is None:
-            raise NotImplementedError(f"Generator '{args.mode}' does not exist.")
-
-        generator = generator_class(
+        generator = build_generator(
+            mode=args.mode,
             channels=args.channels,
             fps=args.fps,
             frequency=args.frequency,
