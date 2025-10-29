@@ -16,6 +16,16 @@ def sacn_multicast_address(universe: int) -> IPv4Address:
     return IPv4Address(f"239.255.{hi}.{lo}")
 
 
+def pick_outgoing_ip_via_route(group_address: IPv4Address):
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    try:
+        s.connect((str(group_address), DEFAULT_PORT))
+        return IPv4Address(s.getsockname()[0])
+
+    finally:
+        s.close()
+
+
 class BaseUDPSocket(ABC):
 
     def __init__(
@@ -89,3 +99,15 @@ class MulticastSocket(BaseUDPSocket):
 
     def _configure_socket(self, sock: socket.socket) -> None:
         sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, self._ttl)
+
+        if_ip = (
+            self._bind_address
+            if self._bind_address != IPv4Address("0.0.0.0")
+            else pick_outgoing_ip_via_route(self._dest_address)
+        )
+
+        sock.setsockopt(
+            socket.IPPROTO_IP,
+            socket.IP_MULTICAST_IF,
+            socket.inet_aton(str(if_ip)),
+        )
