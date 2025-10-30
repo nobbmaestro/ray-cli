@@ -47,12 +47,12 @@ make install
 To broadcast a ramp DMX signal to a specific IP address:
 
 ```sh
-ray-cli 192.168.86.198 \
+ray-cli                 \
     --dst 192.168.86.67 \
-    --mode chase \
-    --universes 1 2 \
-    --channels 24 \
-    --fps 50 \
+    --mode chase        \
+    --universes 1 2     \
+    --channels 24       \
+    --fps 50            \
     --duration 60
 ```
 
@@ -80,7 +80,8 @@ usage: ray-cli [-m {chase,ramp,ramp-down,ramp-up,sine,square,static}] [-d DURATI
 Command-line utility for generating and broadcasting DMX over sACN
 
 positional arguments:
-  IP_ADDRESS                                 IP address of the DMX source
+  IP_ADDRESS                                 IP address of the DMX source (default:
+                                             0.0.0.0)
 
 optional arguments:
   -m, --mode {chase,ramp,ramp-down,ramp-up,sine,square,static}
@@ -97,8 +98,9 @@ optional arguments:
                                              (range: 0-255, default: 0)
   -f, --frequency FREQUENCY                  frequency of the generated signal (default:
                                              1.0)
-  --fps FPS                                  frames per second per universe (default:
-                                             10)
+  -p, --priority PRIORITY                    DMX source priority (range: 0-200, default:
+                                             100)
+  --fps FPS                                  frames per second per universe (default: 10)
   --dst DST                                  IP address of the dmx destination (default:
                                              MULTICAST)
 
