@@ -16,6 +16,7 @@ PACKAGE_SUMMARY = importlib.metadata.metadata("ray-cli")["Summary"]
 
 MAX_CHANNELS = 512
 MAX_FPS = 10**4
+MAX_PACKETS = 10**9
 MIN_INTENSITY = 0
 MAX_INTENSITY = 255
 MIN_PRIORITY = 0
@@ -89,13 +90,6 @@ def parse_args(args=None):
         help="DMX signal shape mode (default: %(default)s)",
     )
     argparser.add_argument(
-        "-d",
-        "--duration",
-        default=None,
-        type=non_zero_float_type(),
-        help="broadcast duration in seconds (default: INDEFINITE)",
-    )
-    argparser.add_argument(
         "-u",
         "--universes",
         default=(1,),
@@ -139,16 +133,33 @@ def parse_args(args=None):
         help="frequency of the generated signal (default: %(default)s)",
     )
     argparser.add_argument(
+        "--dst",
+        type=ipaddress.IPv4Address,
+        default=None,
+        help="IP address of the DMX destination (default: MULTICAST)",
+    )
+
+    runtime_group = argparser.add_argument_group("runtime options")
+    runtime_exclusive_group = runtime_group.add_mutually_exclusive_group()
+    runtime_exclusive_group.add_argument(
+        "-P",
+        "--packets",
+        default=None,
+        type=range_limited_int_type(upper=MAX_PACKETS),
+        help="number of packets to broadcast (default: INDEFINITE)",
+    )
+    runtime_exclusive_group.add_argument(
+        "-d",
+        "--duration",
+        default=None,
+        type=non_zero_float_type(),
+        help="broadcast duration in seconds (default: INDEFINITE)",
+    )
+    runtime_group.add_argument(
         "--fps",
         default=10,
         type=range_limited_int_type(upper=MAX_FPS),
         help="frames per second per universe (default: %(default)s)",
-    )
-    argparser.add_argument(
-        "--dst",
-        type=ipaddress.IPv4Address,
-        default=None,
-        help="IP address of the dmx destination (default: MULTICAST)",
     )
 
     display_group = argparser.add_argument_group("display options")
@@ -230,7 +241,11 @@ def main(args=None):
             sender=sender,
             channels=args.channels,
             fps=args.fps,
-            duration=args.duration,
+            max_packets=(
+                args.packets
+                if args.packets is not None
+                else args.fps * args.duration if args.duration else None
+            ),
         )
 
         if args.purge:

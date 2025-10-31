@@ -12,10 +12,6 @@ class Throttle:
         self.last_tick = time.perf_counter()
 
     @property
-    def rate(self) -> int:
-        return self._rate
-
-    @property
     def time_step(self) -> float:
         return 1 / self._rate
 
@@ -29,9 +25,8 @@ class Throttle:
 
         self.last_tick = target_tick
 
-    def loop(self, duration: Optional[int] = None) -> Generator[int, None, None]:
+    def loop(self, max_ticks: Optional[int] = None) -> Generator[int, None, None]:
         ticks = 0
-        max_ticks = (self.rate * duration) if duration else None
         while max_ticks is None or ticks < max_ticks:
             self.wait_next()
             yield ticks
@@ -45,17 +40,17 @@ class App:
         generator: DmxDataGenerator,
         channels: int,
         fps: int,
-        duration: Optional[int] = None,
+        max_packets: Optional[int] = None,
     ):
         self.sender = sender
         self.generator = generator
         self.channels = channels
         self.fps = fps
-        self.duration = duration
+        self.max_packets = max_packets
         self.throttle = Throttle(fps)
 
         self.table_logger = TableLogger(channels)
-        self.progress_bar = ProgressBar((fps * duration) if duration else None)
+        self.progress_bar = ProgressBar(max_packets)
 
     def purge_output(self):
         with self.sender:
@@ -71,7 +66,7 @@ class App:
     ):
         with self.sender:
             t_start = time.time()
-            for i in self.throttle.loop(self.duration):
+            for i in self.throttle.loop(self.max_packets):
                 payload = next(self.generator)
 
                 if not dry:
