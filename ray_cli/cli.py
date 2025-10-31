@@ -39,6 +39,7 @@ def print_report(args):
     body = generate_settings_report(
         args=args,
         max_channels=MAX_CHANNELS,
+        max_priority=MAX_PRIORITY,
         max_intensity=MAX_INTENSITY,
     )
     print(f"\n{title}\n\n{body}\n")

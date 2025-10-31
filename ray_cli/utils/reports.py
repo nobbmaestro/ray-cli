@@ -22,6 +22,7 @@ def format_iterable(collection: Sequence, width: int) -> str:
 def generate_settings_report(
     args,
     max_channels,
+    max_priority,
     max_intensity,
     width=80,
     padding_left=15,
@@ -70,6 +71,11 @@ def generate_settings_report(
             desc="channels",
             value=str(args.channels),
             info=f"(out of {max_channels})",
+        ),
+        row(
+            desc="priority",
+            value=str(args.priority),
+            info=f"(out of {max_priority})",
         ),
         row(
             desc="intensity",
