@@ -24,6 +24,7 @@ def generate_settings_report(
     max_channels,
     max_priority,
     max_intensity,
+    max_workers,
     width=80,
     padding_left=15,
     padding_right=12,
@@ -81,6 +82,12 @@ def generate_settings_report(
             desc="intensity",
             value=f"{str(args.intensity_min)} - {str(args.intensity)}",
             info=f"(out of {max_intensity})",
+        ),
+        "",  # SECTION BREAK
+        row(
+            desc="workers",
+            value=f"{args.workers}",
+            info=f"(out of {max_workers})",
         ),
     ]
 

@@ -4,6 +4,7 @@ import ipaddress
 import sys
 from typing import Callable
 
+from ray_cli.core.sender_pool import SenderPool
 from ray_cli.modes import Mode, build_generator
 from ray_cli.transports.sacn.sender import SACNSender
 from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
@@ -22,6 +23,7 @@ MAX_INTENSITY = 255
 MIN_PRIORITY = 0
 MAX_PRIORITY = 200
 MAX_UNIVERSE = 63999
+MAX_WORKERS = 100
 
 
 def print_report(args):
@@ -31,6 +33,7 @@ def print_report(args):
         max_channels=MAX_CHANNELS,
         max_priority=MAX_PRIORITY,
         max_intensity=MAX_INTENSITY,
+        max_workers=MAX_WORKERS,
     )
     print(f"\n{title}\n\n{body}\n")
 
@@ -140,13 +143,20 @@ def parse_args(args=None):
     )
 
     runtime_group = argparser.add_argument_group("runtime options")
+    runtime_group.add_argument(
+        "-w",
+        "--workers",
+        default=1,
+        type=range_limited_int_type(upper=MAX_WORKERS),
+        help="number of sender workers per universe (default: %(default)s)",
+    )
     runtime_exclusive_group = runtime_group.add_mutually_exclusive_group()
     runtime_exclusive_group.add_argument(
         "-P",
         "--packets",
         default=None,
         type=range_limited_int_type(upper=MAX_PACKETS),
-        help="number of packets to broadcast (default: INDEFINITE)",
+        help="number of packets to send per universe per worker (default: INDEFINITE)",
     )
     runtime_exclusive_group.add_argument(
         "-d",
@@ -225,12 +235,20 @@ def main(args=None):
             intensity_lower=args.intensity_min,
         )
 
-        sender = SACNSender(
-            source_name=f"{PACKAGE_NAME} {__version__}",
-            universes=args.universes,
-            priority=args.priority,
-            src=args.IP_ADDRESS,
-            dst=args.dst,
+        sender_pool = SenderPool(
+            senders=[
+                SACNSender(
+                    source_name=(
+                        f"{PACKAGE_NAME} {__version__}"
+                        + (f" [worker:{i}]" if args.workers > 1 else "")
+                    ),
+                    universes=args.universes,
+                    priority=args.priority,
+                    src=args.IP_ADDRESS,
+                    dst=args.dst,
+                )
+                for i in range(args.workers)
+            ]
         )
 
         if not args.quiet and not args.purge:
@@ -238,7 +256,7 @@ def main(args=None):
 
         app = App(
             generator=generator,
-            sender=sender,
+            sender=sender_pool,
             channels=args.channels,
             fps=args.fps,
             max_packets=(
