@@ -1,22 +1,12 @@
 import argparse
 import importlib.metadata
 import ipaddress
-import socket
 import sys
-from typing import Callable, Dict, Type
+from typing import Callable
 
-from ray_cli.dispatchers import SACNDispatcher
-from ray_cli.modes import (
-    ChaseModeDmxDataGenerator,
-    Mode,
-    RampDownModeDmxDataGenerator,
-    RampModeDmxDataGenerator,
-    RampUpModeDmxDataGenerator,
-    SineModeDmxDataGenerator,
-    SquareModeDmxDataGenerator,
-    StaticModeDmxDataGenerator,
-)
-from ray_cli.modes.types import DmxDataGenerator
+from ray_cli.core.sender_pool import SenderPool
+from ray_cli.modes import Mode, build_generator
+from ray_cli.transports.sacn.sender import SACNSender
 from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
@@ -27,11 +17,13 @@ PACKAGE_SUMMARY = importlib.metadata.metadata("ray-cli")["Summary"]
 
 MAX_CHANNELS = 512
 MAX_FPS = 10**4
+MAX_PACKETS = 10**9
 MIN_INTENSITY = 0
 MAX_INTENSITY = 255
 MIN_PRIORITY = 0
 MAX_PRIORITY = 200
 MAX_UNIVERSE = 63999
+MAX_WORKERS = 100
 
 
 def print_report(args):
@@ -39,7 +31,9 @@ def print_report(args):
     body = generate_settings_report(
         args=args,
         max_channels=MAX_CHANNELS,
+        max_priority=MAX_PRIORITY,
         max_intensity=MAX_INTENSITY,
+        max_workers=MAX_WORKERS,
     )
     print(f"\n{title}\n\n{body}\n")
 
@@ -87,7 +81,7 @@ def parse_args(args=None):
         "IP_ADDRESS",
         nargs="?",
         type=ipaddress.IPv4Address,
-        default=socket.gethostbyname(socket.gethostname()),
+        default=ipaddress.IPv4Address("0.0.0.0"),
         help="IP address of the DMX source (default: %(default)s)",
     )
     argparser.add_argument(
@@ -97,13 +91,6 @@ def parse_args(args=None):
         default=Mode.RAMP,
         choices=list(Mode),
         help="DMX signal shape mode (default: %(default)s)",
-    )
-    argparser.add_argument(
-        "-d",
-        "--duration",
-        default=None,
-        type=non_zero_float_type(),
-        help="broadcast duration in seconds (default: INDEFINITE)",
     )
     argparser.add_argument(
         "-u",
@@ -149,16 +136,40 @@ def parse_args(args=None):
         help="frequency of the generated signal (default: %(default)s)",
     )
     argparser.add_argument(
+        "--dst",
+        type=ipaddress.IPv4Address,
+        default=None,
+        help="IP address of the DMX destination (default: MULTICAST)",
+    )
+
+    runtime_group = argparser.add_argument_group("runtime options")
+    runtime_group.add_argument(
+        "-w",
+        "--workers",
+        default=1,
+        type=range_limited_int_type(upper=MAX_WORKERS),
+        help="number of sender workers per universe (default: %(default)s)",
+    )
+    runtime_exclusive_group = runtime_group.add_mutually_exclusive_group()
+    runtime_exclusive_group.add_argument(
+        "-P",
+        "--packets",
+        default=None,
+        type=range_limited_int_type(upper=MAX_PACKETS),
+        help="number of packets to send per universe per worker (default: INDEFINITE)",
+    )
+    runtime_exclusive_group.add_argument(
+        "-d",
+        "--duration",
+        default=None,
+        type=non_zero_float_type(),
+        help="broadcast duration in seconds (default: INDEFINITE)",
+    )
+    runtime_group.add_argument(
         "--fps",
         default=10,
         type=range_limited_int_type(upper=MAX_FPS),
         help="frames per second per universe (default: %(default)s)",
-    )
-    argparser.add_argument(
-        "--dst",
-        type=ipaddress.IPv4Address,
-        default=None,
-        help="IP address of the dmx destination (default: MULTICAST)",
     )
 
     display_group = argparser.add_argument_group("display options")
@@ -185,6 +196,11 @@ def parse_args(args=None):
         "--purge",
         action="store_true",
         help="send zero-data on all channels and exit",
+    )
+    operational_group.add_argument(
+        "--purge-on-exit",
+        action="store_true",
+        help="send zero-data on all channels upon completion",
     )
 
     query_group = argparser.add_argument_group("query options")
@@ -215,21 +231,8 @@ def main(args=None):
         else:
             feedback = Feedback.PROGRESS_BAR
 
-        mode_to_generator: Dict[Mode, Type[DmxDataGenerator]] = {
-            Mode.CHASE: ChaseModeDmxDataGenerator,
-            Mode.RAMP: RampModeDmxDataGenerator,
-            Mode.RAMP_DOWN: RampDownModeDmxDataGenerator,
-            Mode.RAMP_UP: RampUpModeDmxDataGenerator,
-            Mode.SINE: SineModeDmxDataGenerator,
-            Mode.SQUARE: SquareModeDmxDataGenerator,
-            Mode.STATIC: StaticModeDmxDataGenerator,
-        }
-
-        generator_class = mode_to_generator.get(args.mode)
-        if generator_class is None:
-            raise NotImplementedError(f"Generator '{args.mode}' does not exist.")
-
-        generator = generator_class(
+        generator = build_generator(
+            mode=args.mode,
             channels=args.channels,
             fps=args.fps,
             frequency=args.frequency,
@@ -237,14 +240,20 @@ def main(args=None):
             intensity_lower=args.intensity_min,
         )
 
-        dispatcher = SACNDispatcher(
-            source_name=f"{PACKAGE_NAME} {__version__}",
-            channels=args.channels,
-            fps=args.fps,
-            universes=args.universes,
-            src_ip_address=args.IP_ADDRESS,
-            dst_ip_address=args.dst,
-            priority=args.priority,
+        sender_pool = SenderPool(
+            senders=[
+                SACNSender(
+                    source_name=(
+                        f"{PACKAGE_NAME} {__version__}"
+                        + (f" [worker:{i}]" if args.workers > 1 else "")
+                    ),
+                    universes=args.universes,
+                    priority=args.priority,
+                    src=args.IP_ADDRESS,
+                    dst=args.dst,
+                )
+                for i in range(args.workers)
+            ]
         )
 
         if not args.quiet and not args.purge:
@@ -252,19 +261,27 @@ def main(args=None):
 
         app = App(
             generator=generator,
-            dispatcher=dispatcher,
+            sender=sender_pool,
             channels=args.channels,
             fps=args.fps,
-            duration=args.duration,
+            max_packets=(
+                args.packets
+                if args.packets is not None
+                else args.fps * args.duration if args.duration else None
+            ),
         )
 
         if args.purge:
             app.purge_output()
-        else:
-            app.run(feedback, args.dry)
+            return
 
-            if not args.quiet:
-                print("\nDone!")
+        app.run(feedback, args.dry)
+
+        if args.purge_on_exit:
+            app.purge_output()
+
+        if not args.quiet:
+            print("\nDone!")
 
     except KeyboardInterrupt:
         print("\nCancelling...")

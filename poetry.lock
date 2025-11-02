@@ -856,18 +856,6 @@ files = [
 ]
 
 [[package]]
-name = "sacn"
-version = "1.11.0"
-description = "sACN / E1.31 module for easy handling of DMX data over ethernet"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "sacn-1.11.0-py3-none-any.whl", hash = "sha256:4c0c294746c6b8e9290bcc3db7b15483b28a716247d9d762de18597fb703a4fc"},
-    {file = "sacn-1.11.0.tar.gz", hash = "sha256:148b39ca7f3dd616878a70a62b7410d094080977e784f8a6302f352d7395e0ea"},
-]
-
-[[package]]
 name = "tabulate"
 version = "0.9.0"
 description = "Pretty-print tabular data"
@@ -1029,4 +1017,4 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "2481d1dbc7e755e878c1d7e655a06fbc15c835c8f36b9ac1a6103f5a0b5c14d3"
+content-hash = "bf3b2cd2f42ed550ee1115274cee254f77357e023190405a036ee138c644fbfa"

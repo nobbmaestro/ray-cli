@@ -1,3 +1,4 @@
+from .factory import build_generator
 from .generators import (
     ChaseModeDmxDataGenerator,
     DmxData,
@@ -12,6 +13,7 @@ from .mode import Mode
 from .types import DmxDataGenerator
 
 __all__ = (
+    "build_generator",
     "Mode",
     "DmxData",
     "DmxDataGenerator",
