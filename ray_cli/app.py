@@ -54,10 +54,8 @@ class App:
 
     def purge_output(self):
         with self.sender:
-            self._purge_output()
-
-    def _purge_output(self):
-        self.sender.send([0 for _ in range(self.channels)])
+            for _ in range(5):
+                self.sender.send([0 for _ in range(self.channels)])
 
     def run(
         self,
@@ -77,6 +75,3 @@ class App:
 
                 elif feedback == Feedback.PROGRESS_BAR:
                     self.progress_bar.report(i + 1, time.time() - t_start)
-
-            if not dry:
-                self._purge_output()

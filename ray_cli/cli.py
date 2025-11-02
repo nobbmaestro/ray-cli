@@ -197,6 +197,11 @@ def parse_args(args=None):
         action="store_true",
         help="send zero-data on all channels and exit",
     )
+    operational_group.add_argument(
+        "--purge-on-exit",
+        action="store_true",
+        help="send zero-data on all channels upon completion",
+    )
 
     query_group = argparser.add_argument_group("query options")
     query_group.add_argument(
@@ -268,11 +273,15 @@ def main(args=None):
 
         if args.purge:
             app.purge_output()
-        else:
-            app.run(feedback, args.dry)
+            return
 
-            if not args.quiet:
-                print("\nDone!")
+        app.run(feedback, args.dry)
+
+        if args.purge_on_exit:
+            app.purge_output()
+
+        if not args.quiet:
+            print("\nDone!")
 
     except KeyboardInterrupt:
         print("\nCancelling...")
