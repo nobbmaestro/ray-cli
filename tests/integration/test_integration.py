@@ -143,7 +143,7 @@ def test_sends_udp_packet(
     udp_capture: queue.Queue,
 ):
     p = subprocess.run(
-        [sys.executable, "-m", "ray_cli", "--packets", "1", *args],
+        [sys.executable, "-m", "ray_cli", "sacn", "--packets", "1", *args],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=False,

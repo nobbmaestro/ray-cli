@@ -2,12 +2,21 @@ import argparse
 import importlib.metadata
 import ipaddress
 import sys
-from typing import Callable
+from dataclasses import dataclass
 
 from ray_cli.core import Sender, SenderPool
 from ray_cli.modes import Mode, generator_factory
-from ray_cli.protocols import ArtNetFactory, ArtNetUniverse, Protocol, SACNFactory
-from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
+from ray_cli.protocols import ArtNetFactory, ArtNetUniverse, SACNFactory
+from ray_cli.utils import (
+    Cli,
+    Command,
+    CommandGroup,
+    Feedback,
+    Group,
+    MutualExclusiveGroup,
+    Option,
+    generate_settings_report,
+)
 
 from .__version__ import __version__
 from .app import App
@@ -15,58 +24,32 @@ from .app import App
 PACKAGE_NAME = importlib.metadata.metadata("ray-cli")["Name"]
 PACKAGE_SUMMARY = importlib.metadata.metadata("ray-cli")["Summary"]
 
-MAX_CHANNELS = 512
-MAX_FPS = 10**4
-MAX_PACKETS = 10**9
-MIN_INTENSITY = 0
-MAX_INTENSITY = 255
-MIN_PRIORITY = 0
-MAX_PRIORITY = 200
-MAX_UNIVERSE = 63999
-MAX_WORKERS = 100
+
+@dataclass(frozen=True)
+class Limits:
+    channels = (1, 512)
+    intensity = (1, 255)
+    intensity_min = (0, 254)
+    frequency = (0.001, None)
+    workers = (1, 100)
+    packets = (1, None)
+    duration = (0.001, None)
+    fps = (0.001, None)
+    sacn_universes = (1, 63999)
+    artnet_universes = (ArtNetUniverse(0, 0, 0), ArtNetUniverse(15, 15, 127))
+    sacn_priority = (0, 200)
 
 
 def print_report(args):
     title = f"{PACKAGE_NAME} {__version__}"
     body = generate_settings_report(
         args=args,
-        max_channels=MAX_CHANNELS,
-        max_priority=MAX_PRIORITY,
-        max_intensity=MAX_INTENSITY,
-        max_workers=MAX_WORKERS,
+        max_channels=Limits.channels[-1],
+        max_priority=Limits.sacn_priority[-1],
+        max_intensity=Limits.intensity[-1],
+        max_workers=Limits.workers[-1],
     )
     print(f"\n{title}\n\n{body}\n")
-
-
-def range_limited_int_type(
-    upper: int,
-    lower: int = 1,
-) -> Callable:
-    def validate(arg: int) -> int:
-        try:
-            value = int(arg)
-        except ValueError as exc:
-            raise argparse.ArgumentTypeError(f"Invalid integer value: '{arg}'") from exc
-        if value < lower or value > upper:
-            raise argparse.ArgumentTypeError(
-                f"Value mest be between {lower} and {upper}"
-            )
-        return value
-
-    return validate
-
-
-def non_zero_float_type() -> Callable:
-    def validate(arg: float) -> float:
-        try:
-            value = float(arg)
-        except ValueError as exc:
-            raise argparse.ArgumentTypeError(f"Invalid float value: '{arg}'") from exc
-        if value <= 0.0:
-            raise argparse.ArgumentTypeError("Value must be non-zero")
-        return value
-
-    return validate
 
 
 def sacn_sender_pool_factory(args: argparse.Namespace) -> SenderPool:
@@ -95,7 +78,7 @@ def artnet_sender_poll_factory(args: argparse.Namespace) -> SenderPool:
     return SenderPool(
         senders=[
             Sender(
-                universes=[ArtNetUniverse(net=0, sub_net=0, uni=1)],  # FIXME
+                universes=args.universes,
                 factory=ArtNetFactory(physical=w),
                 src=args.src,
                 dst=args.dst,
@@ -105,161 +88,27 @@ def artnet_sender_poll_factory(args: argparse.Namespace) -> SenderPool:
     )
 
 
-def parse_args(args=None):
-    argparser = argparse.ArgumentParser(
-        prog=PACKAGE_NAME,
-        description=PACKAGE_SUMMARY,
-        add_help=False,
-        formatter_class=CustomHelpFormatter,
+def app_factory(args: argparse.Namespace):
+    generator = generator_factory(
+        mode=args.mode,
+        channels=args.channels,
+        fps=args.fps,
+        frequency=args.frequency,
+        intensity_upper=args.intensity,
+        intensity_lower=args.intensity_min,
     )
 
-    argparser.add_argument(
-        "--protocol",
-        type=Protocol,
-        default=Protocol.SACN,
-        choices=list(Protocol),
-        help="DMX protocol (default: %(default)s)",
+    return App(
+        generator=generator,
+        sender=args.callback(args),
+        channels=args.channels,
+        fps=args.fps,
+        max_packets=(
+            args.packets
+            if args.packets is not None
+            else args.fps * args.duration if args.duration else None
+        ),
     )
-    argparser.add_argument(
-        "-m",
-        "--mode",
-        type=Mode,
-        default=Mode.RAMP,
-        choices=list(Mode),
-        help="DMX signal shape mode (default: %(default)s)",
-    )
-    argparser.add_argument(
-        "-u",
-        "--universes",
-        default=(1,),
-        nargs="+",
-        type=range_limited_int_type(upper=MAX_UNIVERSE),
-        help=f"sACN universe(s) to send to (range: 1-{MAX_UNIVERSE}, default: 1)",
-    )
-    argparser.add_argument(
-        "-c",
-        "--channels",
-        default=24,
-        type=range_limited_int_type(upper=MAX_CHANNELS),
-        help=f"DMX channels at universe to send to (range: 1-{MAX_CHANNELS}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
-    )
-    argparser.add_argument(
-        "-i",
-        "--intensity",
-        default=10,
-        type=range_limited_int_type(upper=MAX_INTENSITY),
-        help=f"DMX channels output intensity (range: 1-{MAX_INTENSITY}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
-    )
-    argparser.add_argument(
-        "-I",
-        "--intensity-min",
-        default=0,
-        type=range_limited_int_type(lower=MIN_INTENSITY, upper=MAX_INTENSITY),
-        help=f"DMX channels minimum output intensity (range: {MIN_INTENSITY}-{MAX_INTENSITY}, default: 0)",  # noqa: E501 # pylint: disable=line-too-long
-    )
-    argparser.add_argument(
-        "-p",
-        "--priority",
-        default=100,
-        type=range_limited_int_type(lower=MIN_PRIORITY, upper=MAX_PRIORITY),
-        help=f"DMX source priority (range: {MIN_PRIORITY}-{MAX_PRIORITY}, default: %(default)s)",  # noqa: E501 # pylint: disable=line-too-long
-    )
-    argparser.add_argument(
-        "-f",
-        "--frequency",
-        default=1.0,
-        type=non_zero_float_type(),
-        help="frequency of the generated signal (default: %(default)s)",
-    )
-    argparser.add_argument(
-        "--src",
-        type=ipaddress.IPv4Address,
-        default=ipaddress.IPv4Address("0.0.0.0"),
-        help="IP address of the DMX source (default: %(default)s)",
-    )
-    argparser.add_argument(
-        "--dst",
-        type=ipaddress.IPv4Address,
-        default=None,
-        help="IP address of the DMX destination (default: MULTICAST)",
-    )
-
-    runtime_group = argparser.add_argument_group("runtime options")
-    runtime_group.add_argument(
-        "-w",
-        "--workers",
-        default=1,
-        type=range_limited_int_type(upper=MAX_WORKERS),
-        help="number of sender workers per universe (default: %(default)s)",
-    )
-    runtime_exclusive_group = runtime_group.add_mutually_exclusive_group()
-    runtime_exclusive_group.add_argument(
-        "-P",
-        "--packets",
-        default=None,
-        type=range_limited_int_type(upper=MAX_PACKETS),
-        help="number of packets to send per universe per worker (default: INDEFINITE)",
-    )
-    runtime_exclusive_group.add_argument(
-        "-d",
-        "--duration",
-        default=None,
-        type=non_zero_float_type(),
-        help="broadcast duration in seconds (default: INDEFINITE)",
-    )
-    runtime_group.add_argument(
-        "--fps",
-        default=10,
-        type=range_limited_int_type(upper=MAX_FPS),
-        help="frames per second per universe (default: %(default)s)",
-    )
-
-    display_group = argparser.add_argument_group("display options")
-    display_group.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="run in verbose mode",
-    )
-    display_group.add_argument(
-        "-q",
-        "--quiet",
-        action="store_true",
-        help="run in quiet mode",
-    )
-
-    operational_group = argparser.add_argument_group("operational options")
-    operational_group.add_argument(
-        "--dry",
-        action="store_true",
-        help="simulate outputs without broadcast",
-    )
-    operational_group.add_argument(
-        "--purge",
-        action="store_true",
-        help="send zero-data on all channels and exit",
-    )
-    operational_group.add_argument(
-        "--purge-on-exit",
-        action="store_true",
-        help="send zero-data on all channels upon completion",
-    )
-
-    query_group = argparser.add_argument_group("query options")
-    query_group.add_argument(
-        "-h",
-        "--help",
-        action="help",
-        help="print help and exit",
-    )
-    query_group.add_argument(
-        "-V",
-        "--version",
-        action="version",
-        version=f"%(prog)s {__version__}",
-    )
-
-    return argparser.parse_args(args)
 
 
 def select_feedback(args: argparse.Namespace):
@@ -270,44 +119,239 @@ def select_feedback(args: argparse.Namespace):
     return Feedback.PROGRESS_BAR
 
 
-def select_sender_pool(args: argparse.Namespace):
-    if args.protocol == Protocol.SACN:
-        return sacn_sender_pool_factory(args)
-    if args.protocol == Protocol.ARTNET:
-        return artnet_sender_poll_factory(args)
-    raise NotImplementedError(f"Protocol '{args.protocol}' not supported.")
+dmx_group = Group(
+    options=[
+        Option(
+            ("-m", "--mode"),
+            type=Mode,
+            default=Mode.RAMP,
+            choices=list(Mode),
+            metavar="MODE",
+            help="DMX signal shape mode",
+        ),
+        Option(
+            ("-c", "--channels"),
+            default=24,
+            type=int,
+            help="DMX channels at universe to send to",
+            bounds=Limits.channels,
+        ),
+        Option(
+            ("-i", "--intensity"),
+            default=10,
+            type=int,
+            help="DMX channels output intensity",
+            bounds=Limits.intensity,
+        ),
+        Option(
+            ("-I", "--intensity-min"),
+            default=0,
+            type=int,
+            help="DMX channels minimum output intensity",
+            bounds=Limits.intensity_min,
+        ),
+        Option(
+            ("-f", "--frequency"),
+            default=1.0,
+            type=float,
+            help="frequency of the generated signal",
+            bounds=Limits.frequency,
+        ),
+    ],
+)
+
+network_group = Group(
+    name="network group",
+    options=[
+        Option(
+            ("--src",),
+            type=ipaddress.IPv4Address,
+            default=ipaddress.IPv4Address("0.0.0.0"),
+            help="IP address of the DMX source",
+        ),
+        Option(
+            ("--dst",),
+            type=ipaddress.IPv4Address,
+            default=None,
+            help="IP address of the DMX destination (default: MULTICAST)",
+        ),
+    ],
+)
+
+runtime_group = Group(
+    name="runtime group",
+    options=[
+        Option(
+            ("-w", "--workers"),
+            default=1,
+            type=int,
+            help="number of sender workers per universe",
+            bounds=Limits.workers,
+        ),
+        MutualExclusiveGroup(
+            options=[
+                Option(
+                    ("-P", "--packets"),
+                    default=None,
+                    type=int,
+                    help="number of packets to send per universe per worker",
+                    bounds=Limits.packets,
+                ),
+                Option(
+                    ("-d", "--duration"),
+                    default=None,
+                    type=float,
+                    help="broadcast duration in seconds",
+                    bounds=Limits.duration,
+                ),
+            ],
+        ),
+        Option(
+            ("--fps",),
+            default=10,
+            type=float,
+            help="frames per second per universe",
+            bounds=Limits.fps,
+        ),
+    ],
+)
+
+display_group = MutualExclusiveGroup(
+    name="display options",
+    options=[
+        Option(
+            ("-v", "--verbose"),
+            action="store_true",
+            help="run in verbose mode",
+        ),
+        Option(
+            ("-q", "--quiet"),
+            action="store_true",
+            help="run in quiet mode",
+        ),
+    ],
+)
+
+operational_group = Group(
+    name="operational options",
+    options=[
+        Option(
+            ("--dry",),
+            action="store_true",
+            help="simulate outputs without broadcast",
+        ),
+        Option(
+            ("--purge",),
+            action="store_true",
+            help="send zero-data on all channels and exit",
+        ),
+        Option(
+            ("--purge-on-exit",),
+            action="store_true",
+            help="send zero-data on all channels upon completion",
+        ),
+    ],
+)
+
+query_group = Group(
+    name="query options",
+    options=[
+        Option(
+            ("-h", "--help"),
+            action="help",
+            help="print help and exit",
+        ),
+        Option(
+            ("-V", "--version"),
+            action="version",
+            version=f"%(prog)s {__version__}",
+            help="show program's version number and exit",
+        ),
+    ],
+)
+
+sacn_group = Group(
+    options=[
+        Option(
+            ("-u", "--universes"),
+            default=[1],
+            nargs="+",
+            type=int,
+            help="sACN universe(s) to send to",
+            bounds=Limits.sacn_universes,
+        ),
+        Option(
+            ("-p", "--priority"),
+            default=100,
+            type=int,
+            help="DMX source priority",
+            bounds=Limits.sacn_priority,
+        ),
+    ]
+)
+
+artnet_group = Group(
+    options=[
+        Option(
+            ("-u", "--universes"),
+            default=[str(ArtNetUniverse(net=0, sub_net=0, uni=1))],
+            nargs="+",
+            type=ArtNetUniverse.from_str,
+            help="Art-Net universe(s) to send to",
+            bounds=Limits.artnet_universes,
+        ),
+    ],
+)
+
+shared_opts = [
+    network_group,
+    runtime_group,
+    display_group,
+    operational_group,
+    query_group,
+]
+
+cli = Cli(
+    prog=PACKAGE_NAME,
+    description=PACKAGE_SUMMARY,
+    add_help=False,
+    options=shared_opts,
+    command_groups=[
+        CommandGroup(
+            dest="command",
+            required=True,
+            metavar="PROTOCOL",
+            commands=[
+                Command(
+                    "sacn",
+                    help="Send DMX using sACN (E1.31)",
+                    add_help=False,
+                    options=[dmx_group, sacn_group] + shared_opts,
+                    callback=sacn_sender_pool_factory,
+                ),
+                Command(
+                    "artnet",
+                    help="Send DMX using Art-Net 4",
+                    add_help=False,
+                    options=[dmx_group, artnet_group] + shared_opts,
+                    callback=artnet_sender_poll_factory,
+                ),
+            ],
+        )
+    ],
+)
 
 
 def main(args=None):
     try:
-        args = parse_args(args)
+        args = cli.parse_args(args)
 
         feedback = select_feedback(args)
-        sender_pool = select_sender_pool(args)
-
-        generator = generator_factory(
-            mode=args.mode,
-            channels=args.channels,
-            fps=args.fps,
-            frequency=args.frequency,
-            intensity_upper=args.intensity,
-            intensity_lower=args.intensity_min,
-        )
 
         if not args.quiet and not args.purge:
             print_report(args)
 
-        app = App(
-            generator=generator,
-            sender=sender_pool,
-            channels=args.channels,
-            fps=args.fps,
-            max_packets=(
-                args.packets
-                if args.packets is not None
-                else args.fps * args.duration if args.duration else None
-            ),
-        )
+        app = app_factory(args)
 
         if args.purge:
             app.purge_output()

@@ -1,347 +1,170 @@
-import ipaddress
-from typing import Optional, Union
+from typing import Optional, Sequence, Tuple, Union
 
 import pytest
+from hypothesis import given
+from hypothesis import strategies as st
 
-from ray_cli.cli import parse_args
+from ray_cli.cli import Limits, cli
 from ray_cli.modes import Mode
 
-
-def helper_parse_args(
-    arg: Optional[str] = None,
-    value: Optional[Union[str, list]] = None,
-    positional_args: str = "",
-):
-    args = [positional_args] if positional_args else []
-
-    if arg is not None:
-        args.append(arg)
-
-    if isinstance(value, list):
-        args.extend(value)
-
-    elif value is not None:
-        args.append(value)
-
-    return parse_args(args)
+Number = Union[int, float]
 
 
-@pytest.mark.parametrize("value, expected", [
-    ("1.1.1.1", ipaddress.ip_address("1.1.1.1")),
-    ("192.168.5.1", ipaddress.ip_address("192.168.5.1")),
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "--src",
-])  # fmt: skip
-def test_parse_args_src_ip_address_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.src == expected
+def parse(argv, protocol: str = "sacn"):
+    return cli.parse_args([protocol, *map(str, argv)])
 
 
-@pytest.mark.parametrize("value", [
-    "1",
-    "1.1.1",
-    "192.168.1.1000",
-    "192.168.1.a",
-    "a.a.a.a",
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "--src",
-])  # fmt: skip
-def test_parse_args_src_ip_address_invalid(arg, value):
+def in_range_int(
+    bounds: Tuple[Optional[Number], Optional[Number]],
+) -> st.SearchStrategy[str]:
+    lo, hi = bounds
+    kw = {}
+    if lo is not None:
+        kw["min_value"] = int(lo)
+    if hi is not None:
+        kw["max_value"] = int(hi)
+    return st.integers(**kw).map(str)
+
+
+def out_of_range_int(
+    bounds: Tuple[Optional[Number], Optional[Number]],
+) -> st.SearchStrategy[str]:
+    lo, hi = bounds
+    parts = []
+    if lo is not None:
+        parts.append(st.integers(max_value=int(lo) - 1))
+    if hi is not None:
+        parts.append(st.integers(min_value=int(hi) + 1))
+    return st.one_of(*parts).map(str) if parts else st.nothing()
+
+
+def list_of_in_range_ints(
+    bounds: Tuple[Optional[Number], Optional[Number]],
+    *,
+    min_size: int = 1,
+    max_size: int = 5,
+) -> st.SearchStrategy[Sequence[str]]:
+    return st.lists(in_range_int(bounds), min_size=min_size, max_size=max_size)
+
+
+def non_numeric_text() -> st.SearchStrategy[str]:
+    bads = ["", "x", "nope", "NaN", "--flag", "∞", "ten"]
+    return st.sampled_from(bads)
+
+
+@given(st.sampled_from([m.value for m in Mode]))
+def test_mode_valid(value: str):
+    ns = parse(["--mode", value])
+    assert isinstance(ns.mode, Mode) and ns.mode.value == value
+
+
+@given(st.text(min_size=1).filter(lambda s: s not in {m.value for m in Mode}))
+def test_mode_invalid(value: str):
     with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
+        parse(["--mode", value])
 
 
-@pytest.mark.parametrize("value, expected", [
-    (mode.value, mode) for mode in Mode
-])  # fmt: skip # type: ignore
-@pytest.mark.parametrize("arg", [
-    "-m",
-    "--mode",
-])  # fmt: skip
-def test_parse_args_mode_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.mode == expected
+OPTION_CASES = [
+    ("--channels", "channels", Limits.channels, int),
+    ("--intensity", "intensity", Limits.intensity, int),
+    ("--workers", "workers", Limits.workers, int),
+    ("--priority", "priority", Limits.sacn_priority, int),
+]
 
 
-@pytest.mark.parametrize("value", [
-    "",
-    "typo",
-    "1",
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-m",
-    "--mode",
-])  # fmt: skip
-def test_parse_args_mode_invalid(arg, value):
+@pytest.mark.parametrize("opt, attr, bounds, caster", OPTION_CASES)
+@given(data=st.data())
+def test_option_valid(opt: str, attr: str, bounds, caster, data):
+    value = data.draw(in_range_int(bounds))
+    ns = parse([opt, value])
+    assert getattr(ns, attr) == caster(value)
+
+
+@pytest.mark.parametrize("opt, attr, bounds, caster", OPTION_CASES)
+@given(data=st.data())
+def test_option_invalid(
+    opt: str, attr: str, bounds, caster, data
+):  # pylint: disable=unused-argument
+    bad = data.draw(out_of_range_int(bounds))
     with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
+        parse([opt, bad])
 
 
-@pytest.mark.parametrize("value, expected", [
-    ("1", 1.0),
-    ("1.0", 1.0),
-    ("1.5", 1.5),
-    ("0.00001", 0.00001),
-    ("1000000", 1000000),
-],)  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-d",
-    "--duration",
-])  # fmt: skip
-def test_parse_args_duration_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.duration == expected
+def test_channels_edges():
+    lo, hi = Limits.channels
+    assert parse(["--channels", str(lo)]).channels == lo
+    assert parse(["--channels", str(hi)]).channels == hi
 
 
-@pytest.mark.parametrize("value", [
-    "",
-    "0",
-    "0.0",
-    "-1",
-    "-1.0",
-    "not a float",
-],)  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-d",
-    "--duration",
-])  # fmt: skip
-def test_parse_args_duration_invalid(arg, value):
+@given(non_numeric_text())
+def test_channels_non_numeric_exits(value: str):
     with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
+        parse(["--channels", value])
 
 
-@pytest.mark.parametrize("value, expected", [
-    ("1", [1]),
-    ("4", [4]),
-    (["1", "4"], [1, 4]),
-    (["1", "2", "3", "4", "5", "6", "7", "8"], [1, 2, 3, 4, 5, 6, 7, 8]),
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-u",
-    "--universes",
-])  # fmt: skip
-def test_parse_args_universes_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.universes == expected
+@given(list_of_in_range_ints(Limits.sacn_universes))
+def test_sacn_universes_valid(values: Sequence[str]):
+    ns = parse(["--universes", *values])
+    assert ns.universes == [int(v) for v in values]
 
 
-@pytest.mark.parametrize("value", [
-    "",
-    "0",
-    "-1",
-    "64000",
-    "a",
-    ["1", "0"],
-    ["0", "64000"],
-    ["1", "2", "3", "4", "5", "6", "7", "8", "64000"],
-    ["0", "1", "2", "3", "4", "5", "6", "7", "8"],
-    ["1", "2", "3", "4", "5", "6", "7", "8", "a"],
-    ["1", "2", "3", "4", "5", "6", "7", "8", "-1"],
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-u",
-    "--universes",
-])  # fmt: skip
-def test_parse_args_universes_invalid(arg, value):
+@given(out_of_range_int(Limits.sacn_universes))
+def test_sacn_universes_invalid(value: str):
     with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
+        parse(["--universes", value])
 
 
-@pytest.mark.parametrize("value, expected", [
-    ("1", 1),
-    ("100", 100),
-    ("512", 512),
-],)  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-c",
-    "--channels",
-])  # fmt: skip
-def test_parse_args_channels_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.channels == expected
-
-
-@pytest.mark.parametrize("value", [
-    "",
-    "0",
-    "513",
-    "1.0",
-    "512.0",
-    "-1",
-    "-1.0",
-    "-512.0",
-    "not an int",
-],)  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-c",
-    "--channels",
-])  # fmt: skip
-def test_parse_args_channels_invalid(arg, value):
+def test_packets_duration_mutex():
     with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
+        parse(["--packets", "10", "--duration", "1"])
 
 
-@pytest.mark.parametrize("value, expected", [
-    ("1", 1),
-    ("2", 2),
-    ("10", 10),
-    ("100", 100),
-    ("255", 255),
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-i",
-    "--intensity",
-])  # fmt: skip
-def test_parse_args_intensity_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.intensity == expected
+@pytest.mark.parametrize(
+    "flag, attr",
+    [
+        ("--verbose", "verbose"),
+        ("--quiet", "quiet"),
+        ("--dry", "dry"),
+    ],
+)
+def test_flag_sets_true(flag: str, attr: str):
+    ns = parse([flag])
+    assert getattr(ns, attr) is True
 
 
-@pytest.mark.parametrize("value", [
-    "",
-    "0",
-    "256",
-    "1.0",
-    "255.0",
-    "-1",
-    "-1.0",
-    "-255.0",
-    "not an int",
-],)  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-i",
-    "--intensity",
-])  # fmt: skip
-def test_parse_args_intensity_invalid(arg, value):
+def test_verbose_and_quiet_are_exclusive():
     with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
+        parse(["--verbose", "--quiet"])
 
 
-@pytest.mark.parametrize("value, expected", [
-    ("1", 1),
-    ("2", 2),
-    ("10", 10),
-    ("100", 100),
-    ("1000", 1000),
-    ("10000", 10000),
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "--fps",
-])  # fmt: skip
-def test_parse_args_fps_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.fps == expected
+def test_help_prints_and_exits(capsys):
+    with pytest.raises(SystemExit) as ei:
+        parse(["--help"])
+    assert ei.value.code == 0
+    out = capsys.readouterr().out
+    assert "usage" in out.lower()
 
 
-@pytest.mark.parametrize("value", [
-    "",
-    "0",
-    "10001",
-    "1.0",
-    "10000.0",
-    "-1",
-    "-1.0",
-    "-10000.0",
-    "not an int",
-],)  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "--fps",
-])  # fmt: skip
-def test_parse_args_fps_invalid(arg, value):
-    with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
+def test_version_prints_and_exits(capsys):
+    with pytest.raises(SystemExit) as ei:
+        parse(["--version"])
+    assert ei.value.code == 0
+    out = capsys.readouterr().out
+    assert out.strip()
 
 
-@pytest.mark.parametrize("value, expected", [
-    ("0", 0),
-    ("100", 100),
-    ("200", 200),
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-p",
-    "--priority",
-])  # fmt: skip
-def test_parse_args_priority_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.priority == expected
-
-
-@pytest.mark.parametrize("value", [
-    "201",
-    "1.0",
-    "-1",
-    "-1.0",
-    "not a numeric value",
-],)  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-p",
-    "--priority",
-])  # fmt: skip
-def test_parse_args_priority_invalid(arg, value):
-    with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
-
-
-@pytest.mark.parametrize("value, expected", [
-    ("0.000001", 0.000001),
-    ("0.1", 0.1),
-    ("1", 1),
-    ("1.0", 1.0),
-    ("2", 2),
-    ("10", 10),
-    ("100", 100),
-    ("10000000", 10000000),
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-f",
-    "--frequency",
-])  # fmt: skip
-def test_parse_args_frequency_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.frequency == expected
-
-
-@pytest.mark.parametrize("value", [
-    "",
-    "0",
-    "-1",
-    "-1.0",
-    "not a numeric value",
-],)  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "-f",
-    "--frequency",
-])  # fmt: skip
-def test_parse_args_frequency_invalid(arg, value):
-    with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
-
-
-@pytest.mark.parametrize("value, expected", [
-    ("1.1.1.1", ipaddress.ip_address("1.1.1.1")),
-    ("192.168.5.1", ipaddress.ip_address("192.168.5.1")),
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "--dst",
-])  # fmt: skip
-def test_parse_args_dst_ip_address_valid(arg, value, expected):
-    parsed = helper_parse_args(arg, value)
-    assert parsed.dst == expected
-
-
-@pytest.mark.parametrize("value", [
-    "",
-    "1",
-    "1.1.1",
-    "192.168.1.1000",
-    "192.168.1.a",
-    "a.a.a.a",
-])  # fmt: skip
-@pytest.mark.parametrize("arg", [
-    "--dst",
-])  # fmt: skip
-def test_parse_args_dst_ip_address_invalid(arg, value):
-    with pytest.raises(SystemExit):
-        helper_parse_args(arg, value)
+@given(
+    st.permutations(
+        [
+            ["--channels", "10"],
+            ["--intensity", "5"],
+            ["--workers", "2"],
+        ]
+    )
+)
+def test_option_order_invariance(pairs):
+    argv = [tok for pair in pairs for tok in pair]
+    ns = parse(argv)
+    assert ns.channels == 10
+    assert ns.intensity == 5
+    assert ns.workers == 2

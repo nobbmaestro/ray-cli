@@ -12,7 +12,7 @@ class OpCode(Enum):
     ART_DMX = 0x5000
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class ArtNetUniverse:
     net: int
     sub_net: int
@@ -21,6 +21,14 @@ class ArtNetUniverse:
     def __bytes__(self) -> bytes:
         sub_uni = ((self.sub_net & 0x0F) << 4) | (self.uni & 0x0F)
         return bytes([sub_uni, self.net & 0x7F])
+
+    def __str__(self) -> str:
+        return f"{self.net}.{self.sub_net}.{self.uni}"
+
+    @staticmethod
+    def from_str(string: str) -> "ArtNetUniverse":
+        net, sub_net, uni = map(int, string.split("."))
+        return ArtNetUniverse(net, sub_net, uni)
 
 
 @dataclass

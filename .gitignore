@@ -1,3 +1,4 @@
+.hypothesis/
 .tox/
 .venv/
 __pycache__/

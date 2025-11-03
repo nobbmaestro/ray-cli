@@ -34,6 +34,7 @@ dev = [
     "pytype==2024.2.27",
     "pytest>=8.3.2,<9.0.0",
     "tox>=4.16.0,<5.0.0",
+    "hypothesis>=6.113.0",
 ]
 
 [build-system]

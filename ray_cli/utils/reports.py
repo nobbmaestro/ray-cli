@@ -75,7 +75,7 @@ def generate_settings_report(
         ),
         row(
             desc="priority",
-            value=str(args.priority),
+            value=str(args.priority if hasattr(args, "priority") else "N/A"),
             info=f"(out of {max_priority})",
         ),
         row(
