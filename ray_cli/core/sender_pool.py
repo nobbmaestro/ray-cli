@@ -1,9 +1,9 @@
 from typing import Sequence
 
-from .sender import Sender
+from .sender import BaseSender, Sender
 
 
-class SenderPool(Sender):
+class SenderPool(BaseSender):
     def __init__(
         self,
         senders: Sequence[Sender],

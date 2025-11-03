@@ -4,9 +4,9 @@ import ipaddress
 import sys
 from typing import Callable
 
-from ray_cli.core.sender_pool import SenderPool
-from ray_cli.modes import Mode, build_generator
-from ray_cli.protocols.sacn.sender import SACNSender
+from ray_cli.core import Sender, SenderPool
+from ray_cli.modes import Mode, generator_factory
+from ray_cli.protocols import SACNFactory
 from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
@@ -230,7 +230,7 @@ def main(args=None):
         else:
             feedback = Feedback.PROGRESS_BAR
 
-        generator = build_generator(
+        generator = generator_factory(
             mode=args.mode,
             channels=args.channels,
             fps=args.fps,
@@ -241,13 +241,15 @@ def main(args=None):
 
         sender_pool = SenderPool(
             senders=[
-                SACNSender(
-                    source_name=(
-                        f"{PACKAGE_NAME} {__version__}"
-                        + (f" [worker:{i}]" if args.workers > 1 else "")
+                Sender(
+                    factory=SACNFactory(
+                        source_name=(
+                            f"{PACKAGE_NAME} {__version__}"
+                            + (f" [worker:{i}]" if args.workers > 1 else "")
+                        ),
+                        priority=args.priority,
                     ),
                     universes=args.universes,
-                    priority=args.priority,
                     src=args.src,
                     dst=args.dst,
                 )

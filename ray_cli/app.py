@@ -1,7 +1,7 @@
 import time
 from typing import Generator, Optional
 
-from ray_cli.core.sender import Sender
+from ray_cli.core.sender import BaseSender
 from ray_cli.modes import DmxDataGenerator
 from ray_cli.utils import Feedback, ProgressBar, TableLogger
 
@@ -36,7 +36,7 @@ class Throttle:
 class App:
     def __init__(
         self,
-        sender: Sender,
+        sender: BaseSender,
         generator: DmxDataGenerator,
         channels: int,
         fps: int,

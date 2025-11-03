@@ -23,7 +23,7 @@ MODE_TO_GENERATOR: Dict[Mode, Type[DmxDataGenerator]] = {
 }
 
 
-def build_generator(
+def generator_factory(
     mode: Mode,
     channels: int,
     fps: int,
