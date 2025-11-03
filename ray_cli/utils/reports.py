@@ -39,7 +39,7 @@ def generate_settings_report(
     sections = [
         row(
             desc="source",
-            value=str(args.IP_ADDRESS),
+            value=str(args.src),
         ),
         row(
             desc="destination",

@@ -78,13 +78,6 @@ def parse_args(args=None):
     )
 
     argparser.add_argument(
-        "IP_ADDRESS",
-        nargs="?",
-        type=ipaddress.IPv4Address,
-        default=ipaddress.IPv4Address("0.0.0.0"),
-        help="IP address of the DMX source (default: %(default)s)",
-    )
-    argparser.add_argument(
         "-m",
         "--mode",
         type=Mode,
@@ -134,6 +127,12 @@ def parse_args(args=None):
         default=1.0,
         type=non_zero_float_type(),
         help="frequency of the generated signal (default: %(default)s)",
+    )
+    argparser.add_argument(
+        "--src",
+        type=ipaddress.IPv4Address,
+        default=ipaddress.IPv4Address("0.0.0.0"),
+        help="IP address of the DMX source (default: %(default)s)",
     )
     argparser.add_argument(
         "--dst",
@@ -249,7 +248,7 @@ def main(args=None):
                     ),
                     universes=args.universes,
                     priority=args.priority,
-                    src=args.IP_ADDRESS,
+                    src=args.src,
                     dst=args.dst,
                 )
                 for i in range(args.workers)

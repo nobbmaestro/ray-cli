@@ -10,7 +10,7 @@ from ray_cli.modes import Mode
 def helper_parse_args(
     arg: Optional[str] = None,
     value: Optional[Union[str, list]] = None,
-    positional_args: str = "1.1.1.1",
+    positional_args: str = "",
 ):
     args = [positional_args] if positional_args else []
 
@@ -30,22 +30,27 @@ def helper_parse_args(
     ("1.1.1.1", ipaddress.ip_address("1.1.1.1")),
     ("192.168.5.1", ipaddress.ip_address("192.168.5.1")),
 ])  # fmt: skip
-def test_parse_args_ip_address_valid(value, expected):
-    parsed = helper_parse_args(positional_args=value)
-    assert parsed.IP_ADDRESS == expected
+@pytest.mark.parametrize("arg", [
+    "--src",
+])  # fmt: skip
+def test_parse_args_src_ip_address_valid(arg, value, expected):
+    parsed = helper_parse_args(arg, value)
+    assert parsed.src == expected
 
 
 @pytest.mark.parametrize("value", [
-    # "", # FIXME: We are defaulting IP Address
     "1",
     "1.1.1",
     "192.168.1.1000",
     "192.168.1.a",
     "a.a.a.a",
 ])  # fmt: skip
-def test_parse_args_ip_address_invalid(value):
+@pytest.mark.parametrize("arg", [
+    "--src",
+])  # fmt: skip
+def test_parse_args_src_ip_address_invalid(arg, value):
     with pytest.raises(SystemExit):
-        helper_parse_args(positional_args=value)
+        helper_parse_args(arg, value)
 
 
 @pytest.mark.parametrize("value, expected", [
