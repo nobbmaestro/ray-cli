@@ -9,7 +9,7 @@ from typing import List
 
 import pytest
 
-from ray_cli.transports.sacn.packets import ACN_PID
+from ray_cli.protocols.sacn.packets import ACN_PID
 
 SACN_PORT = 5568
 

@@ -6,7 +6,7 @@ from typing import Callable
 
 from ray_cli.core.sender_pool import SenderPool
 from ray_cli.modes import Mode, build_generator
-from ray_cli.transports.sacn.sender import SACNSender
+from ray_cli.protocols.sacn.sender import SACNSender
 from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
