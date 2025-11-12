@@ -6,7 +6,7 @@ from typing import Callable
 
 from ray_cli.core import Sender, SenderPool
 from ray_cli.modes import Mode, generator_factory
-from ray_cli.protocols import SACNFactory
+from ray_cli.protocols import ArtNetFactory, ArtNetUniverse, Protocol, SACNFactory
 from ray_cli.utils import CustomHelpFormatter, Feedback, generate_settings_report
 
 from .__version__ import __version__
@@ -69,6 +69,42 @@ def non_zero_float_type() -> Callable:
     return validate
 
 
+def sacn_sender_pool_factory(args: argparse.Namespace) -> SenderPool:
+    def generate_source_name(w):
+        return f"{PACKAGE_NAME} {__version__}" + (
+            f" [worker:{w}]" if args.workers > 1 else ""
+        )
+
+    return SenderPool(
+        senders=[
+            Sender(
+                universes=args.universes,
+                factory=SACNFactory(
+                    source_name=generate_source_name(w),
+                    priority=args.priority,
+                ),
+                src=args.src,
+                dst=args.dst,
+            )
+            for w in range(args.workers)
+        ]
+    )
+
+
+def artnet_sender_poll_factory(args: argparse.Namespace) -> SenderPool:
+    return SenderPool(
+        senders=[
+            Sender(
+                universes=[ArtNetUniverse(net=0, sub_net=0, uni=1)],  # FIXME
+                factory=ArtNetFactory(physical=w),
+                src=args.src,
+                dst=args.dst,
+            )
+            for w in range(args.workers)
+        ]
+    )
+
+
 def parse_args(args=None):
     argparser = argparse.ArgumentParser(
         prog=PACKAGE_NAME,
@@ -77,6 +113,13 @@ def parse_args(args=None):
         formatter_class=CustomHelpFormatter,
     )
 
+    argparser.add_argument(
+        "--protocol",
+        type=Protocol,
+        default=Protocol.SACN,
+        choices=list(Protocol),
+        help="DMX protocol (default: %(default)s)",
+    )
     argparser.add_argument(
         "-m",
         "--mode",
@@ -219,16 +262,28 @@ def parse_args(args=None):
     return argparser.parse_args(args)
 
 
+def select_feedback(args: argparse.Namespace):
+    if args.quiet:
+        return None
+    if args.verbose or args.dry:
+        return Feedback.TABULAR
+    return Feedback.PROGRESS_BAR
+
+
+def select_sender_pool(args: argparse.Namespace):
+    if args.protocol == Protocol.SACN:
+        return sacn_sender_pool_factory(args)
+    if args.protocol == Protocol.ARTNET:
+        return artnet_sender_poll_factory(args)
+    raise NotImplementedError(f"Protocol '{args.protocol}' not supported.")
+
+
 def main(args=None):
     try:
         args = parse_args(args)
 
-        if args.quiet:
-            feedback = None
-        elif args.verbose or args.dry:
-            feedback = Feedback.TABULAR
-        else:
-            feedback = Feedback.PROGRESS_BAR
+        feedback = select_feedback(args)
+        sender_pool = select_sender_pool(args)
 
         generator = generator_factory(
             mode=args.mode,
@@ -237,24 +292,6 @@ def main(args=None):
             frequency=args.frequency,
             intensity_upper=args.intensity,
             intensity_lower=args.intensity_min,
-        )
-
-        sender_pool = SenderPool(
-            senders=[
-                Sender(
-                    factory=SACNFactory(
-                        source_name=(
-                            f"{PACKAGE_NAME} {__version__}"
-                            + (f" [worker:{i}]" if args.workers > 1 else "")
-                        ),
-                        priority=args.priority,
-                    ),
-                    universes=args.universes,
-                    src=args.src,
-                    dst=args.dst,
-                )
-                for i in range(args.workers)
-            ]
         )
 
         if not args.quiet and not args.purge:
