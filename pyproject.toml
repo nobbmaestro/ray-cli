@@ -1,6 +1,6 @@
 [project]
 name = "ray-cli"
-description = "Command-line utility for generating and broadcasting DMX over sACN"
+description = "Command-line utility for generating and broadcasting DMX over sACN and Art-Net"
 authors = [ { name = "Norbert Batiuk", email = "norbert@batiuk.se" }, ]
 readme = "README.md"
 requires-python = ">=3.8,<4.0"
