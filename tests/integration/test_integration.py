@@ -9,7 +9,7 @@ from typing import List
 
 import pytest
 
-from ray_cli.transports.sacn.packets import ACN_PID
+from ray_cli.protocols.sacn.packets import ACN_PID
 
 SACN_PORT = 5568
 
@@ -143,7 +143,7 @@ def test_sends_udp_packet(
     udp_capture: queue.Queue,
 ):
     p = subprocess.run(
-        [sys.executable, "-m", "ray_cli", "--packets", "1", *args],
+        [sys.executable, "-m", "ray_cli", "sacn", "--packets", "1", *args],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         check=False,

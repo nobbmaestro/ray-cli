@@ -1,7 +1,9 @@
 import socket
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from ipaddress import IPv4Address
 from typing import Optional
+
+from ray_cli.core import BaseUDPSocket
 
 DEFAULT_PORT = 5568
 
@@ -26,17 +28,16 @@ def pick_outgoing_ip_via_route(group_address: IPv4Address):
         s.close()
 
 
-class BaseUDPSocket(ABC):
+class BaseSACNSocket(BaseUDPSocket):
 
     def __init__(
         self,
         dest_address: IPv4Address,
         bind_address: IPv4Address = IPv4Address("0.0.0.0"),
-        port: int = DEFAULT_PORT,
     ):
         self._dest_address = dest_address
         self._bind_address = bind_address
-        self._port = port
+        self._port = DEFAULT_PORT
         self._sock: Optional[socket.socket] = None
 
     @abstractmethod
@@ -70,30 +71,23 @@ class BaseUDPSocket(ABC):
 
         self._sock.sendto(payload, (str(self._dest_address), self._port))
 
-    def __enter__(self) -> "BaseUDPSocket":
-        self.open()
-        return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
-
-
-class UnicastSocket(BaseUDPSocket):
+class SACNUnicastSocket(BaseSACNSocket):
     def _configure_socket(self, sock: socket.socket) -> None:
         return
 
 
-class MulticastSocket(BaseUDPSocket):
+class SACNMulticastSocket(BaseSACNSocket):
 
     def __init__(
         self,
         group_address: IPv4Address,
         bind_address: IPv4Address = IPv4Address("0.0.0.0"),
-        port: int = DEFAULT_PORT,
         ttl: int = 1,
     ):
         super().__init__(
-            dest_address=group_address, bind_address=bind_address, port=port
+            dest_address=group_address,
+            bind_address=bind_address,
         )
         self._ttl = ttl
 

@@ -1,38 +1,36 @@
 # Ray CLI
 
-[![GitHub Release](https://img.shields.io/github/v/release/nobbmaestro/ray-cli)](github-release)
+![](https://img.shields.io/pypi/v/ray-cli.svg)
+![](https://img.shields.io/pypi/l/ray-cli.svg)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/ray-cli/development)](github-last-commit)
-[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v0.6.0/development)](githut-commits-since)
-![Tests](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
-![License](https://img.shields.io/github/license/nobbmaestro/ray-cli)
+[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v1.0.0/development)](githut-commits-since)
+![](https://img.shields.io/pypi/pyversions/ray-cli.svg)
+![CI](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
 
-Ray CLI is a command-line utility designed for generating and broadcasting DMX data over sACN.
+Ray CLI is a command-line engineering utility for generating and broadcasting DMX data over sACN and Art-Net.
 
 ## Installation
 
-### Prerequisites
-
-- Python 3.7+
-
-#### Development
-
-- Python 3.7+
-- Poetry
-- Pipx
-
-### Pipx (Recommended)
+Install `ray-cli` from [PyPi](https://pypi.org/project/ray-cli/):
 
 ```sh
-pipx install ray-cli
-```
-
-### Pip
-
-```sh
+# With pip.
 pip install ray-cli
 ```
 
-### GitHub
+```sh
+# With pipx.
+pipx install ray-cli
+```
+
+```sh
+# Or uv.
+uv tool install ray-cli
+```
+
+Or, directly from GitHub:
+
+> **Note**: The GitHub installation requires [uv](https://github.com/astral-sh/uv) to be installed!
 
 ```sh
 git clone git@github.com:nobbmaestro/ray-cli.git
@@ -47,7 +45,7 @@ make install
 To broadcast a ramp DMX signal to a specific IP address:
 
 ```sh
-ray-cli                 \
+ray-cli sacn            \
     --dst 192.168.86.67 \
     --mode chase        \
     --universes 1 2     \
@@ -71,46 +69,43 @@ ray-cli                 \
 ### Complete List of Command-Line Options
 
 ```sh
-usage: ray-cli [-m {chase,ramp,ramp-down,ramp-up,sine,square,static}]
-               [-u UNIVERSES [UNIVERSES ...]] [-c CHANNELS] [-i INTENSITY]
-               [-I INTENSITY_MIN] [-p PRIORITY] [-f FREQUENCY] [--dst DST]
-               [-w WORKERS] [-P PACKETS | -d DURATION] [--fps FPS] [-v] [-q]
-               [--dry] [--purge] [--purge-on-exit] [-h] [-V] [IP_ADDRESS]
-
-Command-line utility for generating and broadcasting DMX over sACN
-
-positional arguments:
-  IP_ADDRESS                                 IP address of the DMX source
-                                             (default: 0.0.0.0)
+usage: ray-cli sacn [-m MODE] [-c CHANNELS] [-i INTENSITY] [-I INTENSITY_MIN]
+                    [-f FREQUENCY] [-u UNIVERSES [UNIVERSES ...]] [-p PRIORITY]
+                    [--src SRC] [--dst DST] [-w WORKERS] [-P PACKETS | -d DURATION]
+                    [--fps FPS] [-v | -q] [--dry] [--purge] [--purge-on-exit] [-h] [-V]
 
 options:
-  -m, --mode {chase,ramp,ramp-down,ramp-up,sine,square,static}
-                                             DMX signal shape mode
-                                             (default: ramp)
-  -u, --universes UNIVERSES [UNIVERSES ...]  sACN universe(s) to send to
-                                             (range: 1-63999, default: 1)
-  -c, --channels CHANNELS                    DMX channels at universe to send to
-                                             (range: 1-512, default: 24)
-  -i, --intensity INTENSITY                  DMX channels output intensity
-                                             (range: 1-255, default: 10)
-  -I, --intensity-min INTENSITY_MIN          DMX channels minimum output intensity
-                                             (range: 0-255, default: 0)
-  -p, --priority PRIORITY                    DMX source priority
-                                             (range: 0-200, default: 100)
-  -f, --frequency FREQUENCY                  frequency of the generated signal
-                                             (default: 1.0)
-  --dst DST                                  IP address of the DMX destination
-                                             (default: MULTICAST)
+  -m, --mode MODE                            DMX signal shape mode (choices: chase, ramp,
+                                             ramp-down, ramp-up, sine, square, static,
+                                             default: ramp)
+  -c, --channels CHANNELS                    DMX channels at universe to send to (range:
+                                             1-512, default: 24)
+  -i, --intensity INTENSITY                  DMX channels output intensity (range: 1-255,
+                                             default: 10)
+  -I, --intensity-min INTENSITY_MIN          DMX channels minimum output intensity (range:
+                                             0-254, default: 0)
+  -f, --frequency FREQUENCY                  frequency of the generated signal (range:
+                                             0.001-unlimited, default: 1.0)
+  -u, --universes UNIVERSES [UNIVERSES ...]  sACN universe(s) to send to (range: 1-63999,
+                                             default: [1])
+  -p, --priority PRIORITY                    DMX source priority (range: 0-200, default:
+                                             100)
 
-runtime options:
-  -w, --workers WORKERS                      number of sender workers per universe
-                                             (default: 1)
-  -P, --packets PACKETS                      number of packets to send per universe
-                                             per worker (default: INDEFINITE)
-  -d, --duration DURATION                    broadcast duration in seconds
-                                             (default: INDEFINITE)
-  --fps FPS                                  frames per second per universe
-                                             (default: 10)
+network group:
+  --src SRC                                  IP address of the DMX source (default:
+                                             0.0.0.0)
+  --dst DST                                  IP address of the DMX destination (default:
+                                             MULTICAST)
+
+runtime group:
+  -w, --workers WORKERS                      number of sender workers per universe (range:
+                                             1-100, default: 1)
+  -P, --packets PACKETS                      number of packets to send per universe per
+                                             worker (range: 1-unlimited)
+  -d, --duration DURATION                    broadcast duration in seconds (range:
+                                             0.001-unlimited)
+  --fps FPS                                  frames per second per universe (range:
+                                             0.001-unlimited, default: 10)
 
 display options:
   -v, --verbose                              run in verbose mode
