@@ -64,6 +64,10 @@ def generate_settings_report(
         ),
         "",  # SECTION BREAK
         row(
+            desc="protocol",
+            value="Art-Net" if args.command == "artnet" else "sACN",
+        ),
+        row(
             desc="universes",
             value=format_iterable(args.universes, width - padding_left - padding_right),
             info=f"({len(args.universes)})",
@@ -83,7 +87,6 @@ def generate_settings_report(
             value=f"{str(args.intensity_min)} - {str(args.intensity)}",
             info=f"(out of {max_intensity})",
         ),
-        "",  # SECTION BREAK
         row(
             desc="workers",
             value=f"{args.workers}",
