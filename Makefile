@@ -21,7 +21,7 @@ test:
 
 publish: test build
 	@echo "Publishing $(PACKAGE_NAME) to PyPI..."
-	uv publish
+	uv publish --token "$$(security find-generic-password -w -s pypi-token)"
 
 clean: dist-clean test-clean uninstall
 
