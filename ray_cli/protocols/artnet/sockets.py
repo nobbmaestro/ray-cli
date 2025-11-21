@@ -5,7 +5,7 @@ from typing import Optional
 
 from ray_cli.core.socket import BaseUDPSocket
 
-DEFAULT_PORT = 5568
+DEFAULT_PORT = 6454
 
 
 def pick_outgoing_ip_via_route(group_address: IPv4Address):
