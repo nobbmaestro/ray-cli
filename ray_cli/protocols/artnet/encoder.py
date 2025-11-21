@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from itertools import chain, islice, repeat
 from typing import Sequence
 
 from .packets import ArtDmx, ArtNetUniverse
@@ -31,6 +32,6 @@ class ArtNetEncoder(Encoder):
                 net=universe.net & 0x0F,
                 physical=physical,
                 sequence=sequence,
-                dmx_data=dmx_data,
+                dmx_data=list(islice(chain(dmx_data, repeat(0)), 512)),
             )
         )
