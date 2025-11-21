@@ -22,6 +22,9 @@ class ArtNetUniverse:
         sub_uni = ((self.sub_net & 0x0F) << 4) | (self.uni & 0x0F)
         return bytes([sub_uni, self.net & 0x7F])
 
+    def __repr__(self) -> str:
+        return str(self)
+
     def __str__(self) -> str:
         return f"{self.net}.{self.sub_net}.{self.uni}"
 

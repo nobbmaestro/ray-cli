@@ -294,7 +294,7 @@ artnet_group = Group(
     options=[
         Option(
             ("-u", "--universes"),
-            default=[str(ArtNetUniverse(net=0, sub_net=0, uni=1))],
+            default=[ArtNetUniverse(net=0, sub_net=0, uni=1)],
             nargs="+",
             type=ArtNetUniverse.from_str,
             help="Art-Net universe(s) to send to",
