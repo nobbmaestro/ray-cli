@@ -3,7 +3,7 @@
 ![](https://img.shields.io/pypi/v/ray-cli.svg)
 ![](https://img.shields.io/pypi/l/ray-cli.svg)
 [![GitHub last commit](https://img.shields.io/github/last-commit/nobbmaestro/ray-cli/development)](github-last-commit)
-[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v1.0.0/development)](githut-commits-since)
+[![GitHub commits since](https://img.shields.io/github/commits-since/nobbmaestro/ray-cli/v1.0.1/development)](githut-commits-since)
 ![](https://img.shields.io/pypi/pyversions/ray-cli.svg)
 ![CI](https://github.com/nobbmaestro/ray-cli/actions/workflows/tests.yml/badge.svg)
 
