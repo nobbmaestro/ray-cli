@@ -66,3 +66,35 @@ disable = [
     'R0913',    # (too-many-arguments)
     'W0511',    # allow TODO, FIXME etc
 ]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration_tests: mark a test as an integration test",
+]
+
+[tool.tox]
+requires = ["tox-uv>=1.11"]
+env_list = ["python3.8", "python3.9", "python3.10", "python3.11", "lint"]
+
+[tool.tox.gh-actions]
+python = """
+    3.8: python3.8
+    3.9: python3.9
+    3.10: python3.10
+    3.11: python3.11, lint
+    """
+
+[tool.tox.env_run_base]
+dependency_groups = ["dev"]
+deps = ["pytest", "pre-commit"]
+commands = [
+    ["pytest"],
+]
+
+[tool.tox.env.lint]
+description = "Run linters via pre-commit"
+skip_install = true
+deps = ["pre-commit"]
+commands = [
+    ["pre-commit", "run", "--all-files", "--show-diff-on-failure"],
+]
