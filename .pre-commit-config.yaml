@@ -1,22 +1,20 @@
 repos:
   - repo: local
     hooks:
-      - id: format
-        name: format
+      - id: ruff-format
+        name: ruff-format
         entry: ruff format
         language: system
         types: [python]
-  - repo: local
-    hooks:
-      - id: lint
-        name: lint
+
+      - id: ruff-lint
+        name: ruff-lint
         entry: ruff check
         language: system
         types: [python]
-  - repo: local
-    hooks:
-      - id: typecheck
-        name: typecheck
+
+      - id: ty-typecheck
+        name: ty-typecheck
         entry: ty check
         language: system
         types: [python]
