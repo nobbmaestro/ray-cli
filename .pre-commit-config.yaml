@@ -1,4 +1,3 @@
-fail_fast: true
 repos:
   - repo: local
     hooks:
@@ -9,19 +8,11 @@ repos:
         types: [python]
   - repo: local
     hooks:
-      - id: flake8
-        name: flake8
-        entry:  flake8
+      - id: lint
+        name: lint
+        entry: ruff check
         language: system
         types: [python]
-  - repo: local
-    hooks:
-      - id: pylint
-        name: pylint
-        entry: pylint
-        language: system
-        types: [python]
-        require_serial: true
   - repo: local
     hooks:
       - id: typecheck

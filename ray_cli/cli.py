@@ -371,7 +371,7 @@ def main(args=None):
         print("\nCancelling...")
         sys.exit(1)
 
-    except Exception as exc:  # pylint: disable=broad-exception-caught
+    except Exception as exc:
         print(f"Failed with error: {exc}")
         sys.exit(1)
 

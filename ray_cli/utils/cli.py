@@ -8,17 +8,15 @@ ARGPARSE_META = {"argparse": True}
 
 ParserLike = Union[
     argparse.ArgumentParser,
-    argparse._ArgumentGroup,  # pylint: disable=W0212
-    argparse._MutuallyExclusiveGroup,  # pylint: disable=W0212
+    argparse._ArgumentGroup,
+    argparse._MutuallyExclusiveGroup,
 ]
 
-SubparsersLike = argparse._SubParsersAction  # pylint: disable=W0212
+SubparsersLike = argparse._SubParsersAction
 
 
 def arg_field(*, default: Any = None) -> Any:
-    return field(  # pylint: disable=invalid-field-call
-        default=default, metadata=ARGPARSE_META
-    )
+    return field(default=default, metadata=ARGPARSE_META)
 
 
 def bounded(

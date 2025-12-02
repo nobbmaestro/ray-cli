@@ -1,4 +1,5 @@
 .hypothesis/
+.ruff_cache/
 .tox/
 .venv/
 __pycache__/
