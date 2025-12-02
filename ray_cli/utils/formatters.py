@@ -2,7 +2,6 @@ import argparse
 
 
 class CustomHelpFormatter(argparse.ArgumentDefaultsHelpFormatter):
-
     def __init__(self, *args, **kwargs):
         kwargs["max_help_position"] = 45
         kwargs["width"] = 120

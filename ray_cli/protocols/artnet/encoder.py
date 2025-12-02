@@ -6,7 +6,6 @@ from .packets import ArtDmx, ArtNetUniverse
 
 
 class Encoder(ABC):
-
     @abstractmethod
     def build_frame(
         self,
@@ -18,7 +17,6 @@ class Encoder(ABC):
 
 
 class ArtNetEncoder(Encoder):
-
     def build_frame(
         self,
         universe: ArtNetUniverse,

@@ -5,7 +5,6 @@ from .packets import DataPacket
 
 
 class Encoder(ABC):
-
     @abstractmethod
     def build_frame(
         self,

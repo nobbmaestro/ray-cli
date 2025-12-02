@@ -10,7 +10,6 @@ U = TypeVar("U", bound=Hashable)
 
 
 class ProtocolFactory(ABC, Generic[U]):
-
     @abstractmethod
     def create_frame_encoder(self, universe) -> FrameEncoder: ...
 

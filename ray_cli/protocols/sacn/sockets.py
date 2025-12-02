@@ -29,7 +29,6 @@ def pick_outgoing_ip_via_route(group_address: IPv4Address):
 
 
 class BaseSACNSocket(BaseUDPSocket):
-
     def __init__(
         self,
         dest_address: IPv4Address,
@@ -78,7 +77,6 @@ class SACNUnicastSocket(BaseSACNSocket):
 
 
 class SACNMulticastSocket(BaseSACNSocket):
-
     def __init__(
         self,
         group_address: IPv4Address,

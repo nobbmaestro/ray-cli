@@ -28,7 +28,6 @@ class FiniteProgressBar:
 
 
 class InfiniteProgressBar:
-
     @staticmethod
     def template() -> str:
         return "packet: {count} in {time:.2f}s"
@@ -50,7 +49,6 @@ class InfiniteProgressBar:
 
 
 class ProgressBar:
-
     def __init__(
         self,
         total: Optional[int] = None,

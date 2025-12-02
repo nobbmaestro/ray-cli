@@ -64,7 +64,6 @@ class BaseGenerator(ABC):
 
 
 class StaticModeDmxDataGenerator(BaseGenerator):
-
     def next(self) -> DmxData:
         intensity = next(self.generator)
         return [intensity for _ in range(self.channels)]
@@ -82,7 +81,6 @@ class StaticModeDmxDataGenerator(BaseGenerator):
 
 
 class RampModeDmxDataGenerator(BaseGenerator):
-
     def next(self) -> DmxData:
         intensity = next(self.generator)
         return [math.ceil(intensity)] * self.channels
@@ -106,7 +104,6 @@ class RampModeDmxDataGenerator(BaseGenerator):
 
 
 class RampUpModeDmxDataGenerator(BaseGenerator):
-
     def next(self) -> DmxData:
         intensity = next(self.generator)
         return [math.ceil(intensity)] * self.channels
@@ -129,7 +126,6 @@ class RampUpModeDmxDataGenerator(BaseGenerator):
 
 
 class RampDownModeDmxDataGenerator(BaseGenerator):
-
     def next(self) -> DmxData:
         intensity = next(self.generator)
         return [math.ceil(intensity)] * self.channels
@@ -152,7 +148,6 @@ class RampDownModeDmxDataGenerator(BaseGenerator):
 
 
 class ChaseModeDmxDataGenerator(BaseGenerator):
-
     def next(self) -> DmxData:
         channel = round(next(self.generator))
         return [
@@ -174,7 +169,6 @@ class ChaseModeDmxDataGenerator(BaseGenerator):
 
 
 class SquareModeDmxDataGenerator(BaseGenerator):
-
     def next(self) -> DmxData:
         intensity = next(self.generator)
         return [math.ceil(intensity)] * self.channels
@@ -198,7 +192,6 @@ class SquareModeDmxDataGenerator(BaseGenerator):
 
 
 class SineModeDmxDataGenerator(BaseGenerator):
-
     def next(self) -> DmxData:
         output_coeff = next(self.generator)
         return [

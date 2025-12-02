@@ -25,16 +25,15 @@ Repository = "https://github.com/nobbmaestro/ray-cli"
 
 [dependency-groups]
 dev = [
-    "black==24.3.0",
     "flake8==5.0.4",
     "flake8-pyproject==1.2.3",
-    "isort==5.13.2",
     "pre-commit==3.5.0",
     "pylint==3.1.0",
     "pytest>=8.3.2,<9.0.0",
     "tox>=4.16.0,<5.0.0",
     "hypothesis>=6.113.0",
     "ty>=0.0.1a29",
+    "ruff>=0.14.7",
 ]
 
 [build-system]
@@ -44,15 +43,15 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 source = "vcs"
 
-[tool.black]
+[tool.ruff]
 line-length = 88
-target-version = ['py38']
+target-version = 'py311'
+
+[tool.ruff.format]
+line-ending = "lf"
 
 [tool.flake8]
 max-line-length = 88
-
-[tool.isort]
-profile = "black"
 
 [tool.pylint]
 max-line-length = 88

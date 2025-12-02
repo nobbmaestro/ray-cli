@@ -52,7 +52,6 @@ def bounded(
 
 @dataclass
 class BaseCli:
-
     @property
     def kwargs(self):
         return {

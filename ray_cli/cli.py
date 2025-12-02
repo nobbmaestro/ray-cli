@@ -106,7 +106,9 @@ def app_factory(args: argparse.Namespace):
         max_packets=(
             args.packets
             if args.packets is not None
-            else args.fps * args.duration if args.duration else None
+            else args.fps * args.duration
+            if args.duration
+            else None
         ),
     )
 
