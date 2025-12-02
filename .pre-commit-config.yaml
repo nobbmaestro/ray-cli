@@ -31,9 +31,8 @@ repos:
         require_serial: true
   - repo: local
     hooks:
-      - id: pytype
-        name: pytype
-        entry: pytype
+      - id: typecheck
+        name: typecheck
+        entry: ty check
         language: system
         types: [python]
-        require_serial: true
