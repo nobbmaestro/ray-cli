@@ -19,7 +19,6 @@ def pick_outgoing_ip_via_route(group_address: IPv4Address):
 
 
 class BaseArtNetUDPSocket(BaseUDPSocket):
-
     def __init__(
         self,
         dest_address: IPv4Address,
@@ -68,7 +67,6 @@ class ArtNetUnicastSocket(BaseArtNetUDPSocket):
 
 
 class ArtNetBroadcastSocket(BaseArtNetUDPSocket):
-
     def __init__(self):
         super().__init__(
             dest_address=IPv4Address("255.255.255.255"),

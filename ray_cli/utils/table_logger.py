@@ -41,7 +41,7 @@ class TableLogger:
         payload_str = ""
 
         for item in payload:
-            payload_str += f"{item:>5n} "  # pylint: disable=consider-using-join
+            payload_str += f"{item:>5n} "
 
         return cls.template().format(
             a=str(frame_count),

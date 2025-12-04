@@ -82,9 +82,7 @@ def test_option_valid(opt: str, attr: str, bounds, caster, data):
 
 @pytest.mark.parametrize("opt, attr, bounds, caster", OPTION_CASES)
 @given(data=st.data())
-def test_option_invalid(
-    opt: str, attr: str, bounds, caster, data
-):  # pylint: disable=unused-argument
+def test_option_invalid(opt: str, attr: str, bounds, caster, data):
     bad = data.draw(out_of_range_int(bounds))
     with pytest.raises(SystemExit):
         parse([opt, bad])

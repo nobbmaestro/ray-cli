@@ -6,11 +6,17 @@ from .formatters import CustomHelpFormatter
 
 ARGPARSE_META = {"argparse": True}
 
+ParserLike = Union[
+    argparse.ArgumentParser,
+    argparse._ArgumentGroup,
+    argparse._MutuallyExclusiveGroup,
+]
+
+SubparsersLike = argparse._SubParsersAction
+
 
 def arg_field(*, default: Any = None) -> Any:
-    return field(  # pylint: disable=invalid-field-call
-        default=default, metadata=ARGPARSE_META
-    )
+    return field(default=default, metadata=ARGPARSE_META)
 
 
 def bounded(
@@ -44,7 +50,6 @@ def bounded(
 
 @dataclass
 class BaseCli:
-
     @property
     def kwargs(self):
         return {
@@ -72,7 +77,7 @@ class Option(BaseCli):
 
     bounds: Optional[Tuple[Any, Any]] = None
 
-    def register(self, parser: Union[argparse.ArgumentParser, argparse._ArgumentGroup]):
+    def register(self, parser: ParserLike):
         kwargs = self.kwargs
 
         kwargs["help"] = self._generate_help()
@@ -111,7 +116,7 @@ class MutualExclusiveGroup(BaseCli):
     options: Sequence[Option] = field(default_factory=tuple)
     required: bool = False
 
-    def register(self, parser: argparse.ArgumentParser):
+    def register(self, parser: ParserLike):
         target = parser.add_argument_group(self.name) if self.name else parser
         mx = target.add_mutually_exclusive_group(required=self.required)
         for opt in self.options:
@@ -125,7 +130,7 @@ class Group(BaseCli):
         default_factory=tuple
     )
 
-    def register(self, parser: argparse.ArgumentParser):
+    def register(self, parser: ParserLike):
         target = parser.add_argument_group(self.name) if self.name else parser
         for opt in self.options:
             opt.register(target)
@@ -143,7 +148,7 @@ class Command(BaseCli):
     options: Sequence[Union[Option, Group]] = field(default_factory=tuple)
     callback: Optional[Callable] = None
 
-    def register(self, subparser: argparse._SubParsersAction):
+    def register(self, subparser: SubparsersLike):
         parser = subparser.add_parser(**self.kwargs)
         for opt in self.options:
             opt.register(parser)
@@ -173,7 +178,9 @@ class Cli(BaseCli):
     formatter_class: Optional[Type[argparse.HelpFormatter]] = arg_field(
         default=CustomHelpFormatter
     )
-    options: Sequence[Union[Option, Group]] = field(default_factory=tuple)
+    options: Sequence[Union[Option, Group, MutualExclusiveGroup]] = field(
+        default_factory=tuple
+    )
     command_groups: Sequence[CommandGroup] = field(default_factory=tuple)
 
     def parse_args(self, args=None) -> argparse.Namespace:

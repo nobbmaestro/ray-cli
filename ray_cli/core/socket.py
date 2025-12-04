@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 
 class BaseUDPSocket(ABC):
-
     @abstractmethod
     def open(self) -> None: ...
 

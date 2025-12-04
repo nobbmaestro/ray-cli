@@ -18,7 +18,6 @@ class Universe:
 
 
 class BaseSender(ABC):
-
     @abstractmethod
     def open(self) -> None: ...
 
