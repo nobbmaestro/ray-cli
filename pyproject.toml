@@ -40,6 +40,12 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 source = "vcs"
 
+[tool.hatch.build.targets.sdist]
+exclude = ["/.direnv", "/dist", "/.git"]
+
+[tool.hatch.build.targets.wheel]
+exclude = ["/.direnv"]
+
 [tool.ruff]
 line-length = 88
 target-version = 'py311'
