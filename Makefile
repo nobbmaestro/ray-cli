@@ -17,7 +17,7 @@ install: build
 
 test:
 	@echo "Running tests with tox..."
-	tox
+	uv run tox
 
 publish: test build
 	@echo "Publishing $(PACKAGE_NAME) to PyPI..."
