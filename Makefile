@@ -2,7 +2,7 @@
 
 PACKAGE_NAME := ray-cli
 DIST_DIR := dist
-TEST_DIR := .pytest_cache .pytype .tox
+TEST_DIR := .hypothesis .pytest_cache .pytype .tox .ruff_cache
 WHEEL := $(DIST_DIR)/*.whl
 
 all: install
